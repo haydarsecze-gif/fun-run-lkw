@@ -7,7 +7,6 @@ import {
   Loader2, 
   Send, 
   Users, 
-  Award, 
   Smile, 
   Activity, 
   X,
@@ -16,9 +15,7 @@ import {
   Database,
   Lock,
   Download,
-  ArrowLeft,
-  Calendar,
-  Grid
+  ArrowLeft
 } from 'lucide-react';
 import { supabase, isMockMode } from './supabaseClient';
 
@@ -88,21 +85,21 @@ const INITIAL_MOCK_DATA = [
 function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(false);
 
-  // General App State
+  // App State
   const [registrations, setRegistrations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Admin Dashboard States
+  // Admin Panel State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminData, setAdminData] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
 
-  // Form Field States
+  // Form State
   const [fullName, setFullName] = useState('');
   const [bibName, setBibName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -113,14 +110,14 @@ function App() {
   const [bibNumber, setBibNumber] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
 
-  // Form Warnings
+  // Validation Warnings
   const [bibWarning, setBibWarning] = useState('');
   const [phoneWarning, setPhoneWarning] = useState('');
   const [formError, setFormError] = useState('');
 
   const modalRef = useRef(null);
 
-  // Listen to simple window route changes
+  // Path check routing
   useEffect(() => {
     const checkPath = () => {
       setIsAdminRoute(window.location.pathname === '/admin');
@@ -474,50 +471,52 @@ function App() {
       )}
 
       <div>
-        {/* Navigation */}
-        <nav className="glass-nav py-4 px-6 md:px-12 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Activity className="w-6 h-6 text-white" />
+        {/* Navigation - Wrapped inside max-w-6xl mx-auto to center align perfectly */}
+        <nav className="glass-nav sticky top-0 z-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/')}>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="font-heading text-xl md:text-2xl font-bold tracking-tight text-gradient">
+                  LIMKOKWING
+                </h1>
+                <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest -mt-1">
+                  Fun Run 3KM
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-heading text-xl md:text-2xl font-bold tracking-tight text-gradient">
-                LIMKOKWING
-              </h1>
-              <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest -mt-1">
-                Fun Run 3KM
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            {isAdminRoute ? (
-              <button 
-                onClick={() => navigateTo('/')}
-                className="btn-secondary py-2 px-4 text-sm flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back to Home</span>
-              </button>
-            ) : (
-              <>
+            <div className="flex items-center gap-3">
+              {isAdminRoute ? (
                 <button 
-                  onClick={() => navigateTo('/admin')}
-                  className="btn-secondary py-2 px-4 text-sm flex items-center gap-2"
+                  onClick={() => navigateTo('/')}
+                  className="btn-secondary py-2.5 px-4 text-sm flex items-center gap-2"
                 >
-                  <Lock className="w-4 h-4 text-cyan-400" />
-                  <span>Admin Panel</span>
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back to Home</span>
                 </button>
-                <button 
-                  onClick={openModal}
-                  className="btn-primary pulse-glow"
-                >
-                  <UserPlus className="w-5 h-5" />
-                  <span className="hidden sm:inline">Register BIB</span>
-                  <span className="sm:hidden">Register</span>
-                </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <button 
+                    onClick={() => navigateTo('/admin')}
+                    className="btn-secondary py-2.5 px-4 text-sm flex items-center gap-2"
+                  >
+                    <Lock className="w-4 h-4 text-cyan-400" />
+                    <span>Admin Panel</span>
+                  </button>
+                  <button 
+                    onClick={openModal}
+                    className="btn-primary pulse-glow"
+                  >
+                    <UserPlus className="w-5 h-5" />
+                    <span className="hidden sm:inline">Register BIB</span>
+                    <span className="sm:hidden">Register</span>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </nav>
 
@@ -700,9 +699,9 @@ function App() {
               </p>
             </section>
 
-            {/* Stats Panel */}
-            <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-              <div className="glass-panel p-6 flex items-center justify-between">
+            {/* Centered Total Registered Card (Removed slots and prizes cards as requested) */}
+            <section className="flex justify-center mb-12">
+              <div className="glass-panel p-6 flex items-center justify-between max-w-xs w-full">
                 <div>
                   <p className="text-sm font-medium text-gray-400">Total Registered</p>
                   <h3 className="font-heading text-3xl font-bold text-white mt-1">{loading ? '...' : totalRegistered}</h3>
@@ -711,29 +710,9 @@ function App() {
                   <Users className="w-6 h-6" />
                 </div>
               </div>
-
-              <div className="glass-panel p-6 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-400">Slots Remaining</p>
-                  <h3 className="font-heading text-3xl font-bold text-cyan-400 mt-1">{loading ? '...' : Math.max(1000 - totalRegistered, 0)}</h3>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                  <Activity className="w-6 h-6" />
-                </div>
-              </div>
-
-              <div className="glass-panel p-6 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-400">Prizes Category</p>
-                  <h3 className="font-heading text-3xl font-bold text-emerald-400 mt-1">10+ Awards</h3>
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                  <Award className="w-6 h-6" />
-                </div>
-              </div>
             </section>
 
-            {/* Public Section */}
+            {/* Public Roster list */}
             <section className="glass-panel p-6 sm:p-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
@@ -764,7 +743,7 @@ function App() {
                 </div>
               </div>
 
-              {/* Roster Cards Grid (Responsive, Beautiful, Liquid Glass) */}
+              {/* Roster Cards Grid (Responsive & Centered) */}
               {loading ? (
                 <div className="py-12 text-center text-gray-400">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-400 mb-2" />
