@@ -87,6 +87,7 @@
   opacity: 0.35;
   mix-blend-mode: screen;
   pointer-events: none;
+  will-change: transform; /* Pre-optimizes on GPU for smooth, battery-friendly rendering */
 }
 
 .background-glow::before {
