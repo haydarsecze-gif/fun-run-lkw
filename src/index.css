@@ -882,7 +882,7 @@ dialog.registration-modal {
   color: #ffffff;
   padding: 0;
   overflow: hidden;
-  display: flex;
+  display: none;
   flex-direction: column;
 
   /* Entry/Exit transition configuration */
@@ -896,6 +896,7 @@ dialog.registration-modal {
 }
 
 dialog.registration-modal[open] {
+  display: flex;
   opacity: 1;
   transform: scale(1) translateY(0);
 
