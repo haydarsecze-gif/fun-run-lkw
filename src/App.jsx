@@ -689,7 +689,7 @@ function App() {
             {/* Hero Section */}
             <section className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-cyan-400 text-xs font-semibold mb-4 tracking-wide uppercase">
-                <span>⚡ Limkokwing Campus Run 2026</span>
+                <span>⚡ Limkokwing SiemReap Fun Run</span>
               </div>
               <h2 className="font-heading text-4xl md:text-6xl font-bold tracking-tight text-white mb-4">
                 Claim Your <span className="text-gradient glow-text">BIB Number</span>
