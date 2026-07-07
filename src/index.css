@@ -885,7 +885,7 @@ dialog.registration-modal {
               0 0 60px rgba(0, 240, 255, 0.15);
   width: 90% !important;
   max-width: 540px !important;
-  height: auto !important;
+  height: 85vh !important;
   max-height: 85vh !important;
   margin: auto !important;
   position: fixed !important;
