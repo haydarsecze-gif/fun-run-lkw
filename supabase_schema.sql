@@ -2,8 +2,9 @@
 -- Limkokwing Fun Run Database Setup Script
 -- ==========================================
 
--- 1. Clean up existing objects if reinstalling
+-- 1. Clean up existing objects
 drop view if exists public_registrations;
+drop function if exists get_all_registrations;
 drop table if exists registrations;
 
 -- 2. Create the main registrations table
@@ -21,10 +22,7 @@ create table registrations (
 );
 
 -- 3. Add unique constraints to block duplicate entries
--- Ensure no two people use the same BIB number
 alter table registrations add constraint unique_bib_number unique (bib_number);
-
--- Ensure no two people register with the same phone number
 alter table registrations add constraint unique_phone_number unique (phone_number);
 
 -- 4. Enable Row Level Security (RLS)
@@ -35,19 +33,58 @@ create policy "Allow public registrations" on registrations
 for insert with check (true);
 
 -- 6. Create a secure view for the public listing.
--- This view excludes 'phone_number' to protect user privacy while exposing all details needed for search and verify.
+-- This view ONLY exposes full_name, bib_name, and bib_number to protect user privacy.
 create or replace view public_registrations as
 select 
   id, 
   created_at, 
   full_name, 
   bib_name, 
-  bib_number, 
-  class_name, 
-  gender, 
-  compete, 
-  t_shirt_size
+  bib_number
 from registrations;
 
 -- 7. Grant select permissions on the view to public anonymous and authenticated roles
 grant select on public_registrations to anon, authenticated;
+
+-- 8. Create a secure function to fetch all registration data with an admin password.
+-- This keeps all sensitive fields (like phone numbers, class, shirt size) private from standard users.
+create or replace function get_all_registrations(admin_password text)
+returns table (
+  id uuid,
+  created_at timestamp with time zone,
+  full_name text,
+  bib_name text,
+  phone_number text,
+  gender text,
+  class_name text,
+  compete text,
+  t_shirt_size text,
+  bib_number text
+)
+language plpgsql
+security definer
+as $$
+begin
+  -- Default admin password is 'admin123' - you can modify this to anything you'd like
+  if admin_password = 'admin123' then
+    return query select 
+      r.id, 
+      r.created_at, 
+      r.full_name, 
+      r.bib_name, 
+      r.phone_number, 
+      r.gender, 
+      r.class_name, 
+      r.compete, 
+      r.t_shirt_size, 
+      r.bib_number 
+    from registrations r
+    order by r.created_at desc;
+  else
+    raise exception 'Invalid admin password';
+  end if;
+end;
+$$;
+
+-- Grant execute permissions on the function to public anonymous and authenticated roles
+grant execute on function get_all_registrations(text) to anon, authenticated;
