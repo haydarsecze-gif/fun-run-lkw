@@ -478,7 +478,7 @@ function App() {
                   style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Home</span>
+                  <span className="nav-btn-text">Back to Home</span>
                 </button>
               ) : (
                 <>
@@ -488,7 +488,7 @@ function App() {
                     style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                   >
                     <Lock className="w-4 h-4 text-cyan-400" />
-                    <span>Admin Panel</span>
+                    <span className="nav-btn-text">Admin Panel</span>
                   </button>
                   <button 
                     onClick={openModal}
@@ -496,7 +496,7 @@ function App() {
                     style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                   >
                     <UserPlus className="w-4 h-4" />
-                    <span>Register BIB</span>
+                    <span className="nav-btn-text">Register BIB</span>
                   </button>
                 </>
               )}
