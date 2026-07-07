@@ -148,7 +148,7 @@
 }
 
 .main-content {
-  max-width: 1200px;
+  max-width: 1400px;
   width: 100%;
   margin: 2.5rem auto 0 auto;
   padding: 0 2rem;
@@ -156,7 +156,7 @@
 }
 
 .footer-container {
-  max-width: 1200px;
+  max-width: 1400px;
   width: 100%;
   margin: 4rem auto 0 auto;
   padding: 2rem;
@@ -388,8 +388,8 @@
 
 /* Roster Grid */
 .runner-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 320px));
   justify-content: center;
   gap: 1.5rem;
   width: 100%;
