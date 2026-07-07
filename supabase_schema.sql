@@ -33,14 +33,15 @@ create policy "Allow public registrations" on registrations
 for insert with check (true);
 
 -- 6. Create a secure view for the public listing.
--- This view ONLY exposes full_name, bib_name, and bib_number to protect user privacy.
+-- This view ONLY exposes full_name, bib_name, bib_number, compete and created_at to protect user privacy.
 create or replace view public_registrations as
 select 
   id, 
   created_at, 
   full_name, 
   bib_name, 
-  bib_number
+  bib_number,
+  compete
 from registrations;
 
 -- 7. Grant select permissions on the view to public anonymous and authenticated roles

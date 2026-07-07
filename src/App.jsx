@@ -7,6 +7,7 @@ import {
   Loader2, 
   Send, 
   Users, 
+  Award,
   Smile, 
   Activity, 
   X,
@@ -92,7 +93,7 @@ function App() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Admin Panel State
+  // Admin Dashboard State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminData, setAdminData] = useState([]);
@@ -443,6 +444,8 @@ function App() {
   });
 
   const totalRegistered = registrations.length;
+  // Calculate how many people join to compete for the prizes (compete === 'Yes')
+  const competitiveCount = registrations.filter(r => r.compete === 'Yes').length;
 
   return (
     <div className="relative min-h-screen pb-12 flex flex-col justify-between">
@@ -471,7 +474,7 @@ function App() {
       )}
 
       <div>
-        {/* Navigation - Wrapped inside max-w-6xl mx-auto to center align perfectly */}
+        {/* Navigation */}
         <nav className="glass-nav sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/')}>
@@ -483,7 +486,7 @@ function App() {
                   LIMKOKWING
                 </h1>
                 <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest -mt-1">
-                  Fun Run 3KM
+                  SiemReap Fun Run
                 </p>
               </div>
             </div>
@@ -623,7 +626,7 @@ function App() {
                     <p className="text-xl font-bold text-pink-400 mt-0.5">{adminData.filter(r => r.gender === 'Female').length}</p>
                   </div>
                   <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Competitive</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Competing for Award</p>
                     <p className="text-xl font-bold text-cyan-400 mt-0.5">{adminData.filter(r => r.compete === 'Yes').length}</p>
                   </div>
                 </div>
@@ -699,30 +702,42 @@ function App() {
               </p>
             </section>
 
-            {/* Centered Total Registered Card (Removed slots and prizes cards as requested) */}
-            <section className="flex justify-center mb-12">
-              <div className="glass-panel p-6 flex items-center justify-between max-w-xs w-full">
+            {/* Centered Stats Panels (Total Registered & Competing for Award) */}
+            <section className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-12">
+              {/* Total Registered */}
+              <div className="glass-panel p-6 flex items-center justify-between w-full max-w-[280px]">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Total Registered</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Registered</p>
                   <h3 className="font-heading text-3xl font-bold text-white mt-1">{loading ? '...' : totalRegistered}</h3>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
                   <Users className="w-6 h-6" />
                 </div>
               </div>
+
+              {/* Competing for Prizes */}
+              <div className="glass-panel p-6 flex items-center justify-between w-full max-w-[280px]">
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Competing for Award</p>
+                  <h3 className="font-heading text-3xl font-bold text-cyan-400 mt-1">{loading ? '...' : competitiveCount}</h3>
+                </div>
+                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                  <Award className="w-6 h-6" />
+                </div>
+              </div>
             </section>
 
-            {/* Public Roster list */}
-            <section className="glass-panel p-6 sm:p-8">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            {/* Public Roster List */}
+            <section className="glass-panel p-8 sm:p-10">
+              <div className="flex flex-col items-center text-center gap-4 mb-8">
                 <div>
-                  <h3 className="font-heading text-xl font-semibold text-white">Registered Roster</h3>
-                  <p className="text-sm text-gray-400 mt-0.5">List of taken BIB numbers</p>
+                  <h3 className="font-heading text-2xl font-bold text-white">Registered Roster</h3>
+                  <p className="text-sm text-gray-400 mt-1">Check taken BIB numbers before registering</p>
                 </div>
 
-                {/* Search Bar */}
-                <div className="relative max-w-md w-full">
-                  <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+                {/* Search Bar (Centered) */}
+                <div className="relative max-w-md w-full mt-2">
+                  <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-cyan-400">
                     <Search className="w-5 h-5" />
                   </span>
                   <input
@@ -730,7 +745,7 @@ function App() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search name or BIB number..."
-                    className="glass-input pl-10"
+                    className="glass-input pl-10 text-center"
                   />
                   {searchQuery && (
                     <button
@@ -743,7 +758,7 @@ function App() {
                 </div>
               </div>
 
-              {/* Roster Cards Grid (Responsive & Centered) */}
+              {/* Roster Cards Grid (Centered flex container) */}
               {loading ? (
                 <div className="py-12 text-center text-gray-400">
                   <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-400 mb-2" />
@@ -777,7 +792,7 @@ function App() {
       {/* Footer Area with Sora credit badge */}
       <footer className="max-w-6xl mx-auto px-4 mt-16 text-center space-y-4">
         <div className="text-xs text-gray-500">
-          <p>© 2026 Limkokwing University Fun Run. All rights reserved.</p>
+          <p>© 2026 Limkokwing SiemReap Fun Run. All rights reserved.</p>
           <p className="mt-1">Designed with a modern Liquid Glass Theme.</p>
         </div>
 
