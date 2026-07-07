@@ -7,7 +7,7 @@ import {
   Loader2, 
   Send, 
   Users, 
-  Award,
+  Award, 
   Smile, 
   Activity, 
   X,
@@ -86,21 +86,21 @@ const INITIAL_MOCK_DATA = [
 function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(false);
 
-  // App State
+  // General App State
   const [registrations, setRegistrations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Admin Dashboard State
+  // Admin Dashboard States
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminData, setAdminData] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
 
-  // Form State
+  // Form Field States
   const [fullName, setFullName] = useState('');
   const [bibName, setBibName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -111,14 +111,14 @@ function App() {
   const [bibNumber, setBibNumber] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
 
-  // Validation Warnings
+  // Form Warnings
   const [bibWarning, setBibWarning] = useState('');
   const [phoneWarning, setPhoneWarning] = useState('');
   const [formError, setFormError] = useState('');
 
   const modalRef = useRef(null);
 
-  // Path check routing
+  // Route Listener
   useEffect(() => {
     const checkPath = () => {
       setIsAdminRoute(window.location.pathname === '/admin');
@@ -444,7 +444,6 @@ function App() {
   });
 
   const totalRegistered = registrations.length;
-  // Calculate how many people join to compete for the prizes (compete === 'Yes')
   const competitiveCount = registrations.filter(r => r.compete === 'Yes').length;
 
   return (
@@ -474,7 +473,7 @@ function App() {
       )}
 
       <div>
-        {/* Navigation */}
+        {/* Navigation - Wrapped inside max-w-6xl mx-auto to center align perfectly */}
         <nav className="glass-nav sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/')}>
@@ -705,7 +704,7 @@ function App() {
             {/* Centered Stats Panels (Total Registered & Competing for Award) */}
             <section className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-12">
               {/* Total Registered */}
-              <div className="glass-panel p-6 flex items-center justify-between w-full max-w-[280px]">
+              <div className="stat-pod">
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Registered</p>
                   <h3 className="font-heading text-3xl font-bold text-white mt-1">{loading ? '...' : totalRegistered}</h3>
@@ -716,7 +715,7 @@ function App() {
               </div>
 
               {/* Competing for Prizes */}
-              <div className="glass-panel p-6 flex items-center justify-between w-full max-w-[280px]">
+              <div className="stat-pod">
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Competing for Award</p>
                   <h3 className="font-heading text-3xl font-bold text-cyan-400 mt-1">{loading ? '...' : competitiveCount}</h3>
@@ -727,7 +726,7 @@ function App() {
               </div>
             </section>
 
-            {/* Public Roster List */}
+            {/* Public Roster List Container */}
             <section className="glass-panel p-8 sm:p-10">
               <div className="flex flex-col items-center text-center gap-4 mb-8">
                 <div>
