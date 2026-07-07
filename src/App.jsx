@@ -399,11 +399,12 @@ function App() {
 
         if (error) {
           if (error.code === '23505') {
-            if (error.message.includes('bib_number') || error.details?.includes('bib_number')) {
+            const errStr = (error.message + ' ' + (error.details || '')).toLowerCase();
+            if (errStr.includes('bib_number') || errStr.includes('bib')) {
               setBibWarning(`BIB number ${bibNumber} is already taken!`);
-              throw new Error('This BIB number is already taken. Please choose another.');
+              throw new Error(`BIB number ${bibNumber} is already taken. Please choose another.`);
             }
-            if (error.message.includes('phone_number') || error.details?.includes('phone_number')) {
+            if (errStr.includes('phone_number') || errStr.includes('phone')) {
               setPhoneWarning('This phone number is already registered.');
               throw new Error('This phone number has already been registered. One entry per person.');
             }
