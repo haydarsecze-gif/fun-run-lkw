@@ -475,7 +475,6 @@ function App() {
                 <button 
                   onClick={() => navigateTo('/')}
                   className="btn-secondary"
-                  style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span className="nav-btn-text">Back to Home</span>
@@ -485,7 +484,6 @@ function App() {
                   <button 
                     onClick={() => navigateTo('/admin')}
                     className="btn-secondary"
-                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                   >
                     <Lock className="w-4 h-4 text-cyan-400" />
                     <span className="nav-btn-text">Admin Panel</span>
@@ -493,7 +491,6 @@ function App() {
                   <button 
                     onClick={openModal}
                     className="btn-primary pulse-glow"
-                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                   >
                     <UserPlus className="w-4 h-4" />
                     <span className="nav-btn-text">Register BIB</span>
@@ -678,7 +675,7 @@ function App() {
             {/* Hero Landing */}
             <section className="hero-section">
               <div className="hero-subtitle">
-                <span>⚡ Limkokwing SiemReap Fun Run</span>
+                <span>Limkokwing SiemReap Fun Run</span>
               </div>
               <h2 className="hero-title">
                 Claim Your <span className="text-gradient glow-text">BIB Number</span>

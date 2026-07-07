@@ -635,6 +635,13 @@
   display: inline;
 }
 
+.nav-container .btn-primary,
+.nav-container .btn-secondary {
+  padding: 0.75rem 1.35rem;
+  font-size: 0.85rem;
+  border-radius: 12px;
+}
+
 @media (max-width: 600px) {
   .nav-btn-text {
     display: none;
