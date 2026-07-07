@@ -17,10 +17,8 @@ import {
   Lock,
   Download,
   ArrowLeft,
-  Phone,
-  Grid,
-  Shirt,
-  Calendar
+  Calendar,
+  Grid
 } from 'lucide-react';
 import { supabase, isMockMode } from './supabaseClient';
 
@@ -88,24 +86,23 @@ const INITIAL_MOCK_DATA = [
 ];
 
 function App() {
-  // Navigation / Routing state
   const [isAdminRoute, setIsAdminRoute] = useState(false);
 
-  // App Global State
+  // General App State
   const [registrations, setRegistrations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Admin Dashboard State
+  // Admin Dashboard States
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminData, setAdminData] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
 
-  // Form State
+  // Form Field States
   const [fullName, setFullName] = useState('');
   const [bibName, setBibName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -116,37 +113,28 @@ function App() {
   const [bibNumber, setBibNumber] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
 
-  // Warnings / Validation State
+  // Form Warnings
   const [bibWarning, setBibWarning] = useState('');
   const [phoneWarning, setPhoneWarning] = useState('');
   const [formError, setFormError] = useState('');
 
-  // Refs
   const modalRef = useRef(null);
 
-  // Simple client-side routing check
+  // Listen to simple window route changes
   useEffect(() => {
     const checkPath = () => {
-      const path = window.location.pathname;
-      if (path === '/admin') {
-        setIsAdminRoute(true);
-      } else {
-        setIsAdminRoute(false);
-      }
+      setIsAdminRoute(window.location.pathname === '/admin');
     };
     checkPath();
-    // Listen for back/forward navigation
     window.addEventListener('popstate', checkPath);
     return () => window.removeEventListener('popstate', checkPath);
   }, []);
 
-  // Set up custom router navigators
   const navigateTo = (path) => {
     window.history.pushState({}, '', path);
     window.dispatchEvent(new Event('popstate'));
   };
 
-  // Load public registered runners on mount
   useEffect(() => {
     if (!isAdminRoute) {
       fetchPublicRegistrations();
@@ -166,7 +154,6 @@ function App() {
       setLoading(false);
     } else {
       try {
-        // Fetch from privacy-preserving view (only contains name, bib name, and number)
         const { data, error } = await supabase
           .from('public_registrations')
           .select('*')
@@ -176,14 +163,13 @@ function App() {
         setRegistrations(data || []);
       } catch (error) {
         console.error('Error fetching registrations:', error.message);
-        showToast('Error loading registered list', 'error');
+        showToast('Error loading registered roster', 'error');
       } finally {
         setLoading(false);
       }
     }
   };
 
-  // Login as admin
   const handleAdminLogin = async (e) => {
     e.preventDefault();
     setAdminError('');
@@ -196,13 +182,12 @@ function App() {
           const stored = localStorage.getItem('funrun_registrations');
           setAdminData(stored ? JSON.parse(stored) : INITIAL_MOCK_DATA);
         } else {
-          setAdminError('Invalid admin password. Try "admin123".');
+          setAdminError('Invalid password. Try "admin123".');
         }
         setAdminLoading(false);
-      }, 600);
+      }, 500);
     } else {
       try {
-        // Call RPC database function with password
         const { data, error } = await supabase
           .rpc('get_all_registrations', { admin_password: adminPassword });
 
@@ -210,15 +195,14 @@ function App() {
         setAdminData(data || []);
         setIsAdminLoggedIn(true);
       } catch (error) {
-        console.error('Admin Auth Error:', error.message);
-        setAdminError(error.message || 'Authentication failed. Please verify the password.');
+        console.error('Admin authentication error:', error.message);
+        setAdminError(error.message || 'Access Denied. Check password.');
       } finally {
         setAdminLoading(false);
       }
     }
   };
 
-  // Download registrations as CSV (Excel compatible)
   const downloadExcel = () => {
     const dataToExport = adminData.filter(reg => {
       const q = searchQuery.toLowerCase().trim();
@@ -233,7 +217,7 @@ function App() {
     });
 
     if (dataToExport.length === 0) {
-      showToast('No registration data available to export.', 'error');
+      showToast('No record found to export.', 'error');
       return;
     }
 
@@ -255,21 +239,19 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `Limkokwing_FunRun_Roster_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `FunRun_Participants_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('Exported registrations to CSV successfully!');
+    showToast('Exported registrations roster!');
   };
 
-  // Toast Helper
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 5000);
+    setTimeout(() => setToast(null), 4000);
   };
 
-  // Reset Form
   const resetForm = () => {
     setFullName('');
     setBibName('');
@@ -285,7 +267,6 @@ function App() {
     setFormError('');
   };
 
-  // Open Modal Dialog
   const openModal = () => {
     resetForm();
     if (modalRef.current) {
@@ -293,7 +274,6 @@ function App() {
     }
   };
 
-  // Close Modal Dialog
   const closeModal = () => {
     if (modalRef.current) {
       modalRef.current.close();
@@ -301,14 +281,12 @@ function App() {
     resetForm();
   };
 
-  // Close when clicking backdrop (light dismiss)
   const handleBackdropClick = (e) => {
     if (modalRef.current && e.target === modalRef.current) {
       closeModal();
     }
   };
 
-  // Live validation on BIB Number change
   const handleBibChange = (val) => {
     const sanitized = val.replace(/\D/g, '').slice(0, 4);
     setBibNumber(sanitized);
@@ -320,7 +298,6 @@ function App() {
   };
 
   const checkBibTaken = async (number) => {
-    // We check either registrations array (public view has it) or fetch
     if (isMockMode) {
       const taken = registrations.some(r => r.bib_number === number);
       if (taken) {
@@ -339,12 +316,11 @@ function App() {
           setBibWarning(`BIB number ${number} is already taken!`);
         }
       } catch (err) {
-        console.error('Error checking BIB:', err);
+        console.error(err);
       }
     }
   };
 
-  // Live check on phone duplicate on blur
   const checkPhoneDuplicate = async () => {
     if (!phoneNumber) return;
     setPhoneWarning('');
@@ -357,19 +333,17 @@ function App() {
     }
   };
 
-  // Form Submit Handler
   const handleRegister = async (e) => {
     e.preventDefault();
     setFormError('');
 
-    // Field checks
     if (!fullName.trim()) return setFormError('Full Name is required.');
     if (!bibName.trim()) return setFormError('BIB Name is required.');
     if (!phoneNumber.trim()) return setFormError('Phone Number is required.');
-    if (bibNumber.length !== 4) return setFormError('BIB Number must be exactly 4 digits (e.g. 0001).');
-    if (!waiverAccepted) return setFormError('You must agree to the Health & Liability Waiver.');
-    if (bibWarning) return setFormError('The BIB number is already taken. Please choose another.');
-    if (phoneWarning) return setFormError('This phone number is already registered.');
+    if (bibNumber.length !== 4) return setFormError('BIB Number must be exactly 4 digits.');
+    if (!waiverAccepted) return setFormError('You must accept the waiver.');
+    if (bibWarning) return setFormError('BIB number is taken.');
+    if (phoneWarning) return setFormError('Phone number already registered.');
 
     setSubmitting(true);
 
@@ -387,20 +361,19 @@ function App() {
     if (isMockMode) {
       setTimeout(() => {
         const stored = JSON.parse(localStorage.getItem('funrun_registrations') || '[]');
-        
         const bibTaken = stored.some(r => r.bib_number === bibNumber);
         const phoneTaken = stored.some(r => r.phone_number === phoneNumber.trim());
 
         if (bibTaken) {
-          setBibWarning(`BIB number ${bibNumber} is already taken!`);
-          setFormError('Registration failed: BIB number already taken.');
+          setBibWarning(`BIB ${bibNumber} taken!`);
+          setFormError('BIB number already taken.');
           setSubmitting(false);
           return;
         }
 
         if (phoneTaken) {
-          setPhoneWarning('This phone number is already registered!');
-          setFormError('Registration failed: One registration per phone number.');
+          setPhoneWarning('Phone number already registered!');
+          setFormError('Phone number already registered.');
           setSubmitting(false);
           return;
         }
@@ -417,8 +390,8 @@ function App() {
         
         setSubmitting(false);
         closeModal();
-        showToast('Successfully registered for Limkokwing Fun Run!');
-      }, 800);
+        showToast('Successfully registered for Fun Run!');
+      }, 700);
     } else {
       try {
         const { data, error } = await supabase
@@ -428,12 +401,12 @@ function App() {
         if (error) {
           if (error.code === '23505') {
             if (error.message.includes('bib_number') || error.details?.includes('bib_number')) {
-              setBibWarning(`BIB number ${bibNumber} is already taken!`);
-              throw new Error('This BIB number is already taken. Please choose another.');
+              setBibWarning(`BIB ${bibNumber} is already taken!`);
+              throw new Error('BIB number already taken. Choose another.');
             }
             if (error.message.includes('phone_number') || error.details?.includes('phone_number')) {
-              setPhoneWarning('This phone number is already registered.');
-              throw new Error('This phone number has already been registered. One entry per person.');
+              setPhoneWarning('Phone number already registered.');
+              throw new Error('Phone number already registered. Only 1 entry per person.');
             }
           }
           throw error;
@@ -442,15 +415,14 @@ function App() {
         await fetchPublicRegistrations();
         setSubmitting(false);
         closeModal();
-        showToast('Successfully registered for Limkokwing Fun Run!');
+        showToast('Successfully registered!');
       } catch (err) {
-        setFormError(err.message || 'An error occurred. Please verify your details.');
+        setFormError(err.message || 'An error occurred during submission.');
         setSubmitting(false);
       }
     }
   };
 
-  // Filters for public list
   const filteredPublicRegistrations = registrations.filter(reg => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
@@ -461,7 +433,6 @@ function App() {
     );
   });
 
-  // Filters for admin list
   const filteredAdminRegistrations = adminData.filter(reg => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
@@ -474,22 +445,23 @@ function App() {
     );
   });
 
+  const totalRegistered = registrations.length;
+
   return (
-    <div className="relative min-h-screen pb-20 flex flex-col justify-between">
-      {/* Liquid animated backgrounds */}
+    <div className="relative min-h-screen pb-12 flex flex-col justify-between">
       <div className="background-glow" />
 
-      {/* Preview Mode Alert Banner */}
+      {/* Preview Alert */}
       {isMockMode && (
         <div className="bg-gradient-to-r from-blue-900/60 to-cyan-900/60 backdrop-blur-md border-b border-cyan-500/20 text-cyan-200 py-2.5 px-4 text-center text-xs flex items-center justify-center gap-2 z-50 sticky top-0">
           <Database className="w-4 h-4 text-cyan-400 animate-pulse" />
           <span>
-            <strong>Preview Mode Active:</strong> Connecting to mock local storage. Change environment variables on Vercel to sync database.
+            <strong>Preview Active:</strong> Database variables missing. Sync locally using local storage. Set variables on Vercel for real database.
           </span>
         </div>
       )}
 
-      {/* Toast Notification */}
+      {/* Toast */}
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-xl border backdrop-blur-xl transition-all shadow-xl animate-in fade-in slide-in-from-bottom-5 duration-300 ${
           toast.type === 'error' 
@@ -502,7 +474,7 @@ function App() {
       )}
 
       <div>
-        {/* Navigation Header */}
+        {/* Navigation */}
         <nav className="glass-nav py-4 px-6 md:px-12 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/')}>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -532,7 +504,6 @@ function App() {
                 <button 
                   onClick={() => navigateTo('/admin')}
                   className="btn-secondary py-2 px-4 text-sm flex items-center gap-2"
-                  aria-label="Open Admin Dashboard"
                 >
                   <Lock className="w-4 h-4 text-cyan-400" />
                   <span>Admin Panel</span>
@@ -540,7 +511,6 @@ function App() {
                 <button 
                   onClick={openModal}
                   className="btn-primary pulse-glow"
-                  aria-label="Open registration form"
                 >
                   <UserPlus className="w-5 h-5" />
                   <span className="hidden sm:inline">Register BIB</span>
@@ -551,11 +521,11 @@ function App() {
           </div>
         </nav>
 
-        {/* ADMIN PANEL ROUTE RENDER */}
+        {/* ADMIN DASHBOARD VIEW */}
         {isAdminRoute ? (
           <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 mt-10">
             {!isAdminLoggedIn ? (
-              /* Admin Password Login Form */
+              /* Password Gate */
               <div className="max-w-md mx-auto mt-16 glass-panel p-8">
                 <div className="text-center mb-6">
                   <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto text-cyan-400 mb-3">
@@ -605,7 +575,7 @@ function App() {
                 </form>
               </div>
             ) : (
-              /* Admin Data Roster Dashboard */
+              /* Authenticated Admin Dashboard */
               <section className="glass-panel p-6 sm:p-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
                   <div>
@@ -628,7 +598,7 @@ function App() {
                       />
                     </div>
 
-                    {/* Export Button */}
+                    {/* Download */}
                     <button 
                       onClick={downloadExcel}
                       className="btn-primary py-2 px-4 text-sm flex items-center gap-2"
@@ -639,7 +609,7 @@ function App() {
                   </div>
                 </div>
 
-                {/* KPI stats bar inside admin */}
+                {/* Dashboard Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center">
                     <p className="text-[10px] text-gray-400 uppercase tracking-wider">Total Runners</p>
@@ -659,7 +629,7 @@ function App() {
                   </div>
                 </div>
 
-                {/* Admin Table Area */}
+                {/* Table container */}
                 <div className="overflow-x-auto rounded-xl border border-white/5">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -667,20 +637,18 @@ function App() {
                         <th className="py-4 px-4 font-heading">BIB</th>
                         <th className="py-4 px-4">BIB Name</th>
                         <th className="py-4 px-4">Full Name</th>
-                        <th className="py-4 px-4">Phone Number</th>
+                        <th className="py-4 px-4">Phone</th>
                         <th className="py-4 px-4">Gender</th>
                         <th className="py-4 px-4">Class</th>
-                        <th className="py-4 px-4">Size</th>
+                        <th className="py-4 px-4">T-Shirt</th>
                         <th className="py-4 px-4">Compete</th>
-                        <th className="py-4 px-4 text-right">Register Date</th>
+                        <th className="py-4 px-4 text-right">Date</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-xs text-gray-300">
                       {filteredAdminRegistrations.length === 0 ? (
                         <tr>
-                          <td colSpan="9" className="py-12 text-center text-gray-500">
-                            No matching participant records found.
-                          </td>
+                          <td colSpan="9" className="py-12 text-center text-gray-500">No records found.</td>
                         </tr>
                       ) : (
                         filteredAdminRegistrations.map((reg) => (
@@ -700,7 +668,7 @@ function App() {
                               </span>
                             </td>
                             <td className="py-4 px-4 text-right text-gray-500">
-                              {new Date(reg.created_at).toLocaleString(undefined, {
+                              {new Date(reg.created_at).toLocaleDateString(undefined, {
                                 month: 'short',
                                 day: 'numeric',
                                 hour: '2-digit',
@@ -717,23 +685,22 @@ function App() {
             )}
           </main>
         ) : (
-          /* STANDARD PUBLIC USER INTERFACE RENDER */
+          /* STANDARD USER VIEW */
           <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 mt-10">
-            
-            {/* Hero Banner */}
+            {/* Hero Section */}
             <section className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-cyan-400 text-xs font-semibold mb-4 tracking-wide uppercase">
-                <span>🔥 Limkokwing Campus Run 2026</span>
+                <span>⚡ Limkokwing Campus Run 2026</span>
               </div>
               <h2 className="font-heading text-4xl md:text-6xl font-bold tracking-tight text-white mb-4">
                 Claim Your <span className="text-gradient glow-text">BIB Number</span>
               </h2>
               <p className="text-gray-400 max-w-2xl mx-auto text-base md:text-lg">
-                Choose your exclusive 4-digit code. Compete for major cash prizes or register for fun! Check the live list below to see what numbers are taken.
+                Choose your unique 4-digit code. Compete for prizes or join for fun! Search below to see what numbers are taken.
               </p>
             </section>
 
-            {/* KPI Counter Cards */}
+            {/* Stats Panel */}
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
               <div className="glass-panel p-6 flex items-center justify-between">
                 <div>
@@ -757,7 +724,7 @@ function App() {
 
               <div className="glass-panel p-6 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Prizes Registered</p>
+                  <p className="text-sm font-medium text-gray-400">Prizes Category</p>
                   <h3 className="font-heading text-3xl font-bold text-emerald-400 mt-1">10+ Awards</h3>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
@@ -766,12 +733,12 @@ function App() {
               </div>
             </section>
 
-            {/* Registration List & Search */}
+            {/* Public Section */}
             <section className="glass-panel p-6 sm:p-8">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                   <h3 className="font-heading text-xl font-semibold text-white">Registered Roster</h3>
-                  <p className="text-sm text-gray-400 mt-0.5">Taken BIB numbers list</p>
+                  <p className="text-sm text-gray-400 mt-0.5">List of taken BIB numbers</p>
                 </div>
 
                 {/* Search Bar */}
@@ -783,9 +750,8 @@ function App() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search friend name or BIB number..."
+                    placeholder="Search name or BIB number..."
                     className="glass-input pl-10"
-                    aria-label="Search registered runners"
                   />
                   {searchQuery && (
                     <button
@@ -798,60 +764,46 @@ function App() {
                 </div>
               </div>
 
-              {/* Public Table: ONLY BIB, BIB Name, and Full Name are displayed publicly */}
-              <div className="overflow-x-auto rounded-xl border border-white/5">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-white/[0.02] text-xs font-semibold text-cyan-400 uppercase tracking-wider border-b border-white/5">
-                      <th className="py-4 px-6 font-heading">BIB Number</th>
-                      <th className="py-4 px-6">Name on BIB</th>
-                      <th className="py-4 px-6">Full Name</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 text-sm">
-                    {loading ? (
-                      <tr>
-                        <td colSpan="3" className="py-12 text-center text-gray-400">
-                          <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-400 mb-2" />
-                          Loading registrations...
-                        </td>
-                      </tr>
-                    ) : filteredPublicRegistrations.length === 0 ? (
-                      <tr>
-                        <td colSpan="3" className="py-12 text-center text-gray-500">
-                          {searchQuery ? 'No runners matching your search.' : 'No registrations yet. Be the first to register!'}
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredPublicRegistrations.map((reg) => (
-                        <tr key={reg.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-4 px-6">
-                            <span className="inline-block font-heading font-bold text-base text-cyan-400 px-3 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 tracking-wider">
-                              {reg.bib_number}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6 font-medium text-white">{reg.bib_name}</td>
-                          <td className="py-4 px-6 text-gray-300">{reg.full_name}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+              {/* Roster Cards Grid (Responsive, Beautiful, Liquid Glass) */}
+              {loading ? (
+                <div className="py-12 text-center text-gray-400">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-400 mb-2" />
+                  Loading registrations...
+                </div>
+              ) : filteredPublicRegistrations.length === 0 ? (
+                <div className="py-12 text-center text-gray-500">
+                  {searchQuery ? 'No runners matching your search.' : 'No registrations yet.'}
+                </div>
+              ) : (
+                <div className="runner-grid">
+                  {filteredPublicRegistrations.map((reg) => (
+                    <div key={reg.id} className="runner-card">
+                      <div className="bib-badge">
+                        <span className="bib-badge-num">{reg.bib_number}</span>
+                        <span className="bib-badge-label">BIB</span>
+                      </div>
+                      <div className="runner-info">
+                        <h4 className="runner-bib-name">{reg.bib_name}</h4>
+                        <p className="runner-full-name">{reg.full_name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           </main>
         )}
       </div>
 
-      {/* Footer Area with credit button by Sora */}
+      {/* Footer Area with Sora credit badge */}
       <footer className="max-w-6xl mx-auto px-4 mt-16 text-center space-y-4">
         <div className="text-xs text-gray-500">
           <p>© 2026 Limkokwing University Fun Run. All rights reserved.</p>
           <p className="mt-1">Designed with a modern Liquid Glass Theme.</p>
         </div>
 
-        {/* Credit Banner */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/5 border border-cyan-500/20 text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
+        {/* Credit Badge */}
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-cyan-500/5 border border-cyan-500/25 text-[10px] text-cyan-400 font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/5">
           <Smile className="w-3 h-3 text-cyan-400" />
           <span>Made by Sora</span>
         </div>
@@ -864,7 +816,6 @@ function App() {
         className="registration-modal"
         aria-modal="true"
       >
-        {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.01]">
           <div>
             <h3 className="font-heading text-xl font-bold text-white flex items-center gap-2">
@@ -876,18 +827,14 @@ function App() {
           <button 
             onClick={closeModal}
             className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Body / Scrollable Form */}
         <form onSubmit={handleRegister} className="flex-1 overflow-y-auto p-6 space-y-6">
-          
-          {/* Form Error Banner */}
           {formError && (
-            <div className="p-3 bg-red-950/60 border border-red-500/20 text-red-200 rounded-xl text-sm flex items-start gap-2 animate-shake">
+            <div className="p-3 bg-red-950/60 border border-red-500/20 text-red-200 rounded-xl text-sm flex items-start gap-2">
               <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <span>{formError}</span>
             </div>
@@ -906,11 +853,10 @@ function App() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="glass-input"
-              autocomplete="name"
             />
           </div>
 
-          {/* BIB Name (Nickname) */}
+          {/* BIB Name */}
           <div className="space-y-2">
             <label htmlFor="bib-name" className="block text-sm font-semibold text-gray-300">
               Name on the BIB (Nickname)
@@ -925,10 +871,9 @@ function App() {
               onChange={(e) => setBibName(e.target.value)}
               className="glass-input"
             />
-            <p className="text-[11px] text-gray-500">This nickname will be printed directly on your physical runner BIB.</p>
           </div>
 
-          {/* Phone Number */}
+          {/* Phone */}
           <div className="space-y-2">
             <label htmlFor="phone-number" className="block text-sm font-semibold text-gray-300">
               Phone Number
@@ -945,21 +890,17 @@ function App() {
                 setPhoneWarning('');
               }}
               className="glass-input"
-              autocomplete="tel"
             />
             {phoneWarning && (
               <p className="text-xs text-red-400 flex items-center gap-1 mt-1 font-medium">
                 <AlertTriangle className="w-3.5 h-3.5" /> {phoneWarning}
               </p>
             )}
-            <p className="text-[11px] text-gray-500">Only 1 registration allowed per phone number.</p>
           </div>
 
           {/* Gender */}
           <div className="space-y-2">
-            <span className="block text-sm font-semibold text-gray-300">
-              Gender
-            </span>
+            <span className="block text-sm font-semibold text-gray-300">Gender</span>
             <div className="custom-radio-group">
               <label className="custom-radio-card">
                 <input
@@ -984,11 +925,9 @@ function App() {
             </div>
           </div>
 
-          {/* Class Dropdown */}
+          {/* Class */}
           <div className="space-y-2">
-            <label htmlFor="class-select" className="block text-sm font-semibold text-gray-300">
-              Class / Category
-            </label>
+            <label htmlFor="class-select" className="block text-sm font-semibold text-gray-300">Class / Category</label>
             <select
               id="class-select"
               value={className}
@@ -996,18 +935,14 @@ function App() {
               className="glass-input"
             >
               {['S2A', 'S2B', 'S2C', 'S2D', 'S2E', 'S2F', 'S2G', 'S2H', 'S2I', 'S2J', 'S1A', 'Degree'].map(cls => (
-                <option key={cls} value={cls} className="bg-slate-900 text-white">
-                  {cls}
-                </option>
+                <option key={cls} value={cls} className="bg-slate-900 text-white">{cls}</option>
               ))}
             </select>
           </div>
 
-          {/* Enter Race Competition */}
+          {/* Compete */}
           <div className="space-y-2">
-            <span className="block text-sm font-semibold text-gray-300">
-              Would you like to compete for the prize?
-            </span>
+            <span className="block text-sm font-semibold text-gray-300">Would you like to compete for the prize?</span>
             <div className="custom-radio-group">
               <label className="custom-radio-card">
                 <input
@@ -1017,7 +952,7 @@ function App() {
                   checked={compete === 'Yes'}
                   onChange={() => setCompete('Yes')}
                 />
-                Yes (Compete)
+                Yes
               </label>
               <label className="custom-radio-card">
                 <input
@@ -1027,17 +962,14 @@ function App() {
                   checked={compete === 'No'}
                   onChange={() => setCompete('No')}
                 />
-                No (Run for Fun)
+                No (Join for Fun)
               </label>
             </div>
-            <p className="text-[11px] text-gray-500">Choosing "No" registers you as a leisure runner, excluding you from physical winner awards.</p>
           </div>
 
-          {/* T-Shirt Size */}
+          {/* T-Shirt */}
           <div className="space-y-2">
-            <span className="block text-sm font-semibold text-gray-300">
-              T-Shirt Size
-            </span>
+            <span className="block text-sm font-semibold text-gray-300">T-Shirt Size</span>
             <div className="t-shirt-grid">
               {['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'].map(size => (
                 <label key={size} className="custom-radio-card">
@@ -1054,11 +986,9 @@ function App() {
             </div>
           </div>
 
-          {/* BIB Number Selection */}
+          {/* BIB Number */}
           <div className="space-y-2">
-            <label htmlFor="bib-number" className="block text-sm font-semibold text-gray-300">
-              Choose 4-Digit BIB Number
-            </label>
+            <label htmlFor="bib-number" className="block text-sm font-semibold text-gray-300">Choose 4-Digit BIB Number</label>
             <input
               type="text"
               id="bib-number"
@@ -1079,12 +1009,10 @@ function App() {
                 <Check className="w-3.5 h-3.5" /> BIB Number {bibNumber} is available!
               </p>
             ) : null}
-            <p className="text-[11px] text-gray-500">
-              You must enter exactly 4 digits. Prepend zeros if necessary (e.g. enter <strong>0001</strong> instead of 1, or <strong>0055</strong> instead of 55).
-            </p>
+            <p className="text-[11px] text-gray-500">Must be exactly 4 digits. (e.g. 0001, 0023, 9999).</p>
           </div>
 
-          {/* Telegram Channel Join */}
+          {/* Telegram Channel */}
           <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1">
@@ -1102,7 +1030,7 @@ function App() {
             </a>
           </div>
 
-          {/* Health & Liability Waiver Checkbox */}
+          {/* Waiver */}
           <div className="space-y-3 pt-2">
             <span className="block text-sm font-semibold text-gray-300 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-cyan-400" />
@@ -1126,7 +1054,7 @@ function App() {
             </label>
           </div>
 
-          {/* Modal Footer / Submit Panel */}
+          {/* Footer Submit */}
           <div className="pt-4 border-t border-white/5 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 bg-white/[0.01]">
             <button 
               type="button" 
