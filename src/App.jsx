@@ -86,21 +86,21 @@ const INITIAL_MOCK_DATA = [
 function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(false);
 
-  // General App State
+  // App Global State
   const [registrations, setRegistrations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Admin Dashboard States
+  // Admin Dashboard State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [adminData, setAdminData] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
 
-  // Form Field States
+  // Form State
   const [fullName, setFullName] = useState('');
   const [bibName, setBibName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -111,14 +111,14 @@ function App() {
   const [bibNumber, setBibNumber] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
 
-  // Form Warnings
+  // Warnings / Validation State
   const [bibWarning, setBibWarning] = useState('');
   const [phoneWarning, setPhoneWarning] = useState('');
   const [formError, setFormError] = useState('');
 
   const modalRef = useRef(null);
 
-  // Route Listener
+  // Path check routing listener
   useEffect(() => {
     const checkPath = () => {
       setIsAdminRoute(window.location.pathname === '/admin');
@@ -161,7 +161,7 @@ function App() {
         setRegistrations(data || []);
       } catch (error) {
         console.error('Error fetching registrations:', error.message);
-        showToast('Error loading registered roster', 'error');
+        showToast('Error loading registered list', 'error');
       } finally {
         setLoading(false);
       }
@@ -193,7 +193,7 @@ function App() {
         setAdminData(data || []);
         setIsAdminLoggedIn(true);
       } catch (error) {
-        console.error('Admin authentication error:', error.message);
+        console.error('Admin Auth Error:', error.message);
         setAdminError(error.message || 'Access Denied. Check password.');
       } finally {
         setAdminLoading(false);
@@ -215,7 +215,7 @@ function App() {
     });
 
     if (dataToExport.length === 0) {
-      showToast('No record found to export.', 'error');
+      showToast('No registration data available to export.', 'error');
       return;
     }
 
@@ -237,12 +237,12 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `FunRun_Participants_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Limkokwing_FunRun_Roster_${new Date().toISOString().split('T')[0]}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('Exported registrations roster!');
+    showToast('Exported registrations to CSV successfully!');
   };
 
   const showToast = (message, type = 'success') => {
@@ -314,7 +314,7 @@ function App() {
           setBibWarning(`BIB number ${number} is already taken!`);
         }
       } catch (err) {
-        console.error(err);
+        console.error('Error checking BIB:', err);
       }
     }
   };
@@ -339,9 +339,9 @@ function App() {
     if (!bibName.trim()) return setFormError('BIB Name is required.');
     if (!phoneNumber.trim()) return setFormError('Phone Number is required.');
     if (bibNumber.length !== 4) return setFormError('BIB Number must be exactly 4 digits.');
-    if (!waiverAccepted) return setFormError('You must accept the waiver.');
-    if (bibWarning) return setFormError('BIB number is taken.');
-    if (phoneWarning) return setFormError('Phone number already registered.');
+    if (!waiverAccepted) return setFormError('You must agree to the Health & Liability Waiver.');
+    if (bibWarning) return setFormError('The BIB number is already taken. Please choose another.');
+    if (phoneWarning) return setFormError('This phone number is already registered.');
 
     setSubmitting(true);
 
@@ -359,19 +359,20 @@ function App() {
     if (isMockMode) {
       setTimeout(() => {
         const stored = JSON.parse(localStorage.getItem('funrun_registrations') || '[]');
+        
         const bibTaken = stored.some(r => r.bib_number === bibNumber);
         const phoneTaken = stored.some(r => r.phone_number === phoneNumber.trim());
 
         if (bibTaken) {
-          setBibWarning(`BIB ${bibNumber} taken!`);
-          setFormError('BIB number already taken.');
+          setBibWarning(`BIB number ${bibNumber} is already taken!`);
+          setFormError('Registration failed: BIB number already taken.');
           setSubmitting(false);
           return;
         }
 
         if (phoneTaken) {
-          setPhoneWarning('Phone number already registered!');
-          setFormError('Phone number already registered.');
+          setPhoneWarning('This phone number is already registered!');
+          setFormError('Registration failed: One registration per phone number.');
           setSubmitting(false);
           return;
         }
@@ -388,7 +389,7 @@ function App() {
         
         setSubmitting(false);
         closeModal();
-        showToast('Successfully registered for Fun Run!');
+        showToast('Successfully registered for Limkokwing Fun Run!');
       }, 700);
     } else {
       try {
@@ -399,12 +400,12 @@ function App() {
         if (error) {
           if (error.code === '23505') {
             if (error.message.includes('bib_number') || error.details?.includes('bib_number')) {
-              setBibWarning(`BIB ${bibNumber} is already taken!`);
-              throw new Error('BIB number already taken. Choose another.');
+              setBibWarning(`BIB number ${bibNumber} is already taken!`);
+              throw new Error('This BIB number is already taken. Please choose another.');
             }
             if (error.message.includes('phone_number') || error.details?.includes('phone_number')) {
-              setPhoneWarning('Phone number already registered.');
-              throw new Error('Phone number already registered. Only 1 entry per person.');
+              setPhoneWarning('This phone number is already registered.');
+              throw new Error('This phone number has already been registered. One entry per person.');
             }
           }
           throw error;
@@ -447,54 +448,34 @@ function App() {
   const competitiveCount = registrations.filter(r => r.compete === 'Yes').length;
 
   return (
-    <div className="relative min-h-screen pb-12 flex flex-col justify-between">
+    <div className="app-container">
+      {/* Liquid background grids */}
       <div className="background-glow" />
 
-      {/* Preview Alert */}
-      {isMockMode && (
-        <div className="bg-gradient-to-r from-blue-900/60 to-cyan-900/60 backdrop-blur-md border-b border-cyan-500/20 text-cyan-200 py-2.5 px-4 text-center text-xs flex items-center justify-center gap-2 z-50 sticky top-0">
-          <Database className="w-4 h-4 text-cyan-400 animate-pulse" />
-          <span>
-            <strong>Preview Active:</strong> Database variables missing. Sync locally using local storage. Set variables on Vercel for real database.
-          </span>
-        </div>
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-xl border backdrop-blur-xl transition-all shadow-xl animate-in fade-in slide-in-from-bottom-5 duration-300 ${
-          toast.type === 'error' 
-            ? 'bg-red-950/80 border-red-500/30 text-red-200' 
-            : 'bg-emerald-950/80 border-emerald-500/30 text-emerald-200'
-        }`}>
-          {toast.type === 'error' ? <AlertTriangle className="w-5 h-5 text-red-400" /> : <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-          <span className="text-sm font-medium">{toast.message}</span>
-        </div>
-      )}
-
       <div>
-        {/* Navigation - Wrapped inside max-w-6xl mx-auto to center align perfectly */}
-        <nav className="glass-nav sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo('/')}>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <Activity className="w-6 h-6 text-white" />
+        {/* Navigation bar with exact centered container boundaries */}
+        <nav className="glass-nav">
+          <div className="nav-container">
+            <div className="cursor-pointer" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }} onClick={() => navigateTo('/')}>
+              <div className="stat-icon-box pulse-glow">
+                <Activity className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="font-heading text-xl md:text-2xl font-bold tracking-tight text-gradient">
+                <h1 className="font-heading text-gradient glow-text" style={{ fontSize: '1.25rem', fontWeight: 800 }}>
                   LIMKOKWING
                 </h1>
-                <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest -mt-1">
+                <p className="font-heading" style={{ fontSize: '0.65rem', color: '#00f0ff', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '-2px' }}>
                   SiemReap Fun Run
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               {isAdminRoute ? (
                 <button 
                   onClick={() => navigateTo('/')}
-                  className="btn-secondary py-2.5 px-4 text-sm flex items-center gap-2"
+                  className="btn-secondary"
+                  style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back to Home</span>
@@ -503,7 +484,8 @@ function App() {
                 <>
                   <button 
                     onClick={() => navigateTo('/admin')}
-                    className="btn-secondary py-2.5 px-4 text-sm flex items-center gap-2"
+                    className="btn-secondary"
+                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                   >
                     <Lock className="w-4 h-4 text-cyan-400" />
                     <span>Admin Panel</span>
@@ -511,10 +493,10 @@ function App() {
                   <button 
                     onClick={openModal}
                     className="btn-primary pulse-glow"
+                    style={{ padding: '0.65rem 1.25rem', fontSize: '0.85rem' }}
                   >
-                    <UserPlus className="w-5 h-5" />
-                    <span className="hidden sm:inline">Register BIB</span>
-                    <span className="sm:hidden">Register</span>
+                    <UserPlus className="w-4 h-4" />
+                    <span>Register BIB</span>
                   </button>
                 </>
               )}
@@ -522,72 +504,74 @@ function App() {
           </div>
         </nav>
 
-        {/* ADMIN DASHBOARD VIEW */}
+        {/* Main layout container with fixed max-width, margins, and padding */}
         {isAdminRoute ? (
-          <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 mt-10">
+          /* ==========================================
+             ADMIN DASHBOARD ROUTE
+             ========================================== */
+          <main className="main-content">
             {!isAdminLoggedIn ? (
-              /* Password Gate */
-              <div className="max-w-md mx-auto mt-16 glass-panel p-8">
-                <div className="text-center mb-6">
-                  <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto text-cyan-400 mb-3">
+              /* Password login panel */
+              <div className="glass-panel" style={{ maxWidth: '420px', margin: '4rem auto 0 auto', padding: '2.5rem' }}>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                  <div style={{ width: '3.5rem', height: '3.5rem', borderRadius: '50%', background: 'rgba(0,240,255,0.08)', border: '1px solid rgba(0,240,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', color: '#00f0ff' }}>
                     <Lock className="w-6 h-6" />
                   </div>
-                  <h2 className="font-heading text-2xl font-bold text-white">Admin Authentication</h2>
-                  <p className="text-sm text-gray-400 mt-1">Please enter your database admin password</p>
+                  <h2 className="font-heading" style={{ fontSize: '1.5rem', color: '#fff' }}>Admin Panel</h2>
+                  <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.25rem' }}>Please enter admin password</p>
                 </div>
 
-                <form onSubmit={handleAdminLogin} className="space-y-4">
+                <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                   {adminError && (
-                    <div className="p-3 bg-red-950/60 border border-red-500/20 text-red-200 rounded-xl text-xs flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                    <div className="form-warning" style={{ padding: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                       <span>{adminError}</span>
                     </div>
                   )}
 
-                  <div className="space-y-2">
-                    <label htmlFor="admin-pass" className="block text-sm font-semibold text-gray-300">
-                      Password
-                    </label>
+                  <div className="form-group">
+                    <label htmlFor="admin-pass" className="form-label">Password</label>
                     <input
                       type="password"
                       id="admin-pass"
                       required
-                      placeholder="Enter Admin Password"
+                      placeholder="Enter Password"
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
-                      className="glass-input text-center tracking-widest"
+                      className="glass-input"
+                      style={{ textAlign: 'center', letterSpacing: '0.25em' }}
                     />
                   </div>
 
                   <button 
                     type="submit" 
-                    className="btn-primary w-full mt-2"
+                    className="btn-primary"
+                    style={{ width: '100%', marginTop: '0.5rem' }}
                     disabled={adminLoading}
                   >
                     {adminLoading ? (
                       <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Authenticating...
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Verifying...
                       </>
                     ) : (
-                      'Authenticate'
+                      'Login'
                     )}
                   </button>
                 </form>
               </div>
             ) : (
-              /* Authenticated Admin Dashboard */
-              <section className="glass-panel p-6 sm:p-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-                  <div>
-                    <h2 className="font-heading text-2xl font-bold text-gradient glow-text">Admin Master Roster</h2>
-                    <p className="text-sm text-gray-400 mt-1">Manage, search, and download all participant records</p>
+              /* Authenticated Admin view */
+              <section className="glass-panel roster-panel">
+                <div className="admin-header-row">
+                  <div className="admin-title-box">
+                    <h2>Admin Master Roster</h2>
+                    <p>Manage, search, and download all participant records</p>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-                    {/* Admin Search */}
-                    <div className="relative max-w-xs w-full">
-                      <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+                  <div className="admin-controls-box">
+                    <div className="admin-search-wrapper">
+                      <span className="search-icon-box">
                         <Search className="w-4 h-4" />
                       </span>
                       <input
@@ -595,14 +579,15 @@ function App() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search roster..."
-                        className="glass-input pl-9 py-2 text-sm"
+                        className="glass-input search-input"
+                        style={{ fontSize: '0.85rem', padding: '0.65rem 1rem' }}
                       />
                     </div>
 
-                    {/* Download */}
                     <button 
                       onClick={downloadExcel}
-                      className="btn-primary py-2 px-4 text-sm flex items-center gap-2"
+                      className="btn-primary"
+                      style={{ fontSize: '0.85rem', padding: '0.65rem 1.25rem' }}
                     >
                       <Download className="w-4 h-4" />
                       <span>Download Excel (CSV)</span>
@@ -611,64 +596,64 @@ function App() {
                 </div>
 
                 {/* Dashboard Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Total Runners</p>
-                    <p className="text-xl font-bold text-white mt-0.5">{adminData.length}</p>
+                <div className="admin-stats-grid">
+                  <div className="admin-stat-card">
+                    <p className="admin-stat-label">Total Runners</p>
+                    <p className="admin-stat-value">{adminData.length}</p>
                   </div>
-                  <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Male</p>
-                    <p className="text-xl font-bold text-blue-400 mt-0.5">{adminData.filter(r => r.gender === 'Male').length}</p>
+                  <div className="admin-stat-card">
+                    <p className="admin-stat-label">Male</p>
+                    <p className="admin-stat-value" style={{ color: '#0052ff' }}>{adminData.filter(r => r.gender === 'Male').length}</p>
                   </div>
-                  <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Female</p>
-                    <p className="text-xl font-bold text-pink-400 mt-0.5">{adminData.filter(r => r.gender === 'Female').length}</p>
+                  <div className="admin-stat-card">
+                    <p className="admin-stat-label">Female</p>
+                    <p className="admin-stat-value" style={{ color: '#ff007f' }}>{adminData.filter(r => r.gender === 'Female').length}</p>
                   </div>
-                  <div className="p-4 rounded-xl border border-white/5 bg-white/[0.01] text-center">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Competing for Award</p>
-                    <p className="text-xl font-bold text-cyan-400 mt-0.5">{adminData.filter(r => r.compete === 'Yes').length}</p>
+                  <div className="admin-stat-card">
+                    <p className="admin-stat-label">Competing</p>
+                    <p className="admin-stat-value" style={{ color: '#00f0ff' }}>{adminData.filter(r => r.compete === 'Yes').length}</p>
                   </div>
                 </div>
 
-                {/* Table container */}
-                <div className="overflow-x-auto rounded-xl border border-white/5">
-                  <table className="w-full text-left border-collapse">
+                {/* Roster Table */}
+                <div className="admin-table-container">
+                  <table className="admin-table">
                     <thead>
-                      <tr className="bg-white/[0.02] text-xs font-semibold text-cyan-400 uppercase tracking-wider border-b border-white/5">
-                        <th className="py-4 px-4 font-heading">BIB</th>
-                        <th className="py-4 px-4">BIB Name</th>
-                        <th className="py-4 px-4">Full Name</th>
-                        <th className="py-4 px-4">Phone</th>
-                        <th className="py-4 px-4">Gender</th>
-                        <th className="py-4 px-4">Class</th>
-                        <th className="py-4 px-4">T-Shirt</th>
-                        <th className="py-4 px-4">Compete</th>
-                        <th className="py-4 px-4 text-right">Date</th>
+                      <tr>
+                        <th>BIB</th>
+                        <th>BIB Name</th>
+                        <th>Full Name</th>
+                        <th>Phone</th>
+                        <th>Gender</th>
+                        <th>Class</th>
+                        <th>T-Shirt</th>
+                        <th>Compete</th>
+                        <th style={{ textAlign: 'right' }}>Date</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 text-xs text-gray-300">
+                    <tbody>
                       {filteredAdminRegistrations.length === 0 ? (
                         <tr>
-                          <td colSpan="9" className="py-12 text-center text-gray-500">No records found.</td>
+                          <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                            No participant records found.
+                          </td>
                         </tr>
                       ) : (
                         filteredAdminRegistrations.map((reg) => (
-                          <tr key={reg.id} className="hover:bg-white/[0.02] transition-colors">
-                            <td className="py-4 px-4 font-heading font-bold text-cyan-400">{reg.bib_number}</td>
-                            <td className="py-4 px-4 text-white font-medium">{reg.bib_name}</td>
-                            <td className="py-4 px-4">{reg.full_name}</td>
-                            <td className="py-4 px-4 font-mono text-cyan-200">{reg.phone_number}</td>
-                            <td className="py-4 px-4">{reg.gender}</td>
-                            <td className="py-4 px-4 text-gray-400">{reg.class_name}</td>
-                            <td className="py-4 px-4 font-semibold">{reg.t_shirt_size}</td>
-                            <td className="py-4 px-4">
-                              <span className={`inline-block px-2 py-0.5 rounded ${
-                                reg.compete === 'Yes' ? 'bg-blue-950 text-blue-300' : 'bg-emerald-950 text-emerald-300'
-                              }`}>
-                                {reg.compete === 'Yes' ? 'Yes' : 'No'}
+                          <tr key={reg.id}>
+                            <td className="font-heading" style={{ fontWeight: 700, color: '#00f0ff' }}>{reg.bib_number}</td>
+                            <td style={{ color: '#fff', fontWeight: 600 }}>{reg.bib_name}</td>
+                            <td>{reg.full_name}</td>
+                            <td style={{ fontFamily: 'monospace', color: '#00f0ff' }}>{reg.phone_number}</td>
+                            <td>{reg.gender}</td>
+                            <td style={{ color: '#94a3b8' }}>{reg.class_name}</td>
+                            <td style={{ fontWeight: 600 }}>{reg.t_shirt_size}</td>
+                            <td>
+                              <span className={`compete-tag ${reg.compete === 'Yes' ? 'yes' : 'no'}`}>
+                                {reg.compete === 'Yes' ? 'Compete' : 'Fun Run'}
                               </span>
                             </td>
-                            <td className="py-4 px-4 text-right text-gray-500">
+                            <td style={{ textAlign: 'right', color: '#64748b' }}>
                               {new Date(reg.created_at).toLocaleDateString(undefined, {
                                 month: 'short',
                                 day: 'numeric',
@@ -686,57 +671,59 @@ function App() {
             )}
           </main>
         ) : (
-          /* STANDARD USER VIEW */
-          <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 mt-10">
-            {/* Hero Section */}
-            <section className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-cyan-400 text-xs font-semibold mb-4 tracking-wide uppercase">
+          /* ==========================================
+             PUBLIC USER VIEW ROUTE
+             ========================================== */
+          <main className="main-content">
+            {/* Hero Landing */}
+            <section className="hero-section">
+              <div className="hero-subtitle">
                 <span>⚡ Limkokwing SiemReap Fun Run</span>
               </div>
-              <h2 className="font-heading text-4xl md:text-6xl font-bold tracking-tight text-white mb-4">
+              <h2 className="hero-title">
                 Claim Your <span className="text-gradient glow-text">BIB Number</span>
               </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto text-base md:text-lg">
-                Choose your unique 4-digit code. Compete for prizes or join for fun! Search below to see what numbers are taken.
+              <p className="hero-desc">
+                Choose your unique 4-digit code. Compete for awards or join for fun! Search below to verify which numbers are already taken.
               </p>
             </section>
 
-            {/* Centered Stats Panels (Total Registered & Competing for Award) */}
-            <section className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-12">
-              {/* Total Registered */}
+            {/* Centered Stats Cards Pods */}
+            <section className="stats-row">
+              {/* Card 1: Total Registered */}
               <div className="stat-pod">
-                <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Registered</p>
-                  <h3 className="font-heading text-3xl font-bold text-white mt-1">{loading ? '...' : totalRegistered}</h3>
+                <div className="stat-info">
+                  <span className="stat-label">Total Registered</span>
+                  <span className="stat-value">{loading ? '...' : totalRegistered}</span>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                  <Users className="w-6 h-6" />
+                <div className="stat-icon-box">
+                  <Users className="w-6 h-6 text-blue-400" />
                 </div>
               </div>
 
-              {/* Competing for Prizes */}
+              {/* Card 2: Competing for Prizes */}
               <div className="stat-pod">
-                <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Competing for Award</p>
-                  <h3 className="font-heading text-3xl font-bold text-cyan-400 mt-1">{loading ? '...' : competitiveCount}</h3>
+                <div className="stat-info">
+                  <span className="stat-label">Competing for Award</span>
+                  <span className="stat-value">{loading ? '...' : competitiveCount}</span>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                  <Award className="w-6 h-6" />
+                <div className="stat-icon-box cyan">
+                  <Award className="w-6 h-6 text-cyan-400" />
                 </div>
               </div>
             </section>
 
-            {/* Public Roster List Container */}
-            <section className="glass-panel p-8 sm:p-10">
-              <div className="flex flex-col items-center text-center gap-4 mb-8">
-                <div>
-                  <h3 className="font-heading text-2xl font-bold text-white">Registered Roster</h3>
-                  <p className="text-sm text-gray-400 mt-1">Check taken BIB numbers before registering</p>
+            {/* Public Roster list card panel */}
+            <section className="glass-panel roster-panel">
+              <div className="roster-header">
+                <div className="roster-title-box">
+                  <h3>Registered Roster</h3>
+                  <p>Check taken BIB numbers before registering</p>
                 </div>
 
-                {/* Search Bar (Centered) */}
-                <div className="relative max-w-md w-full mt-2">
-                  <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-cyan-400">
+                {/* Search Bar Wrapper */}
+                <div className="search-wrapper">
+                  <span className="search-icon-box">
                     <Search className="w-5 h-5" />
                   </span>
                   <input
@@ -744,12 +731,12 @@ function App() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search name or BIB number..."
-                    className="glass-input pl-10 text-center"
+                    className="glass-input search-input"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-white"
+                      className="clear-search-btn"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -757,15 +744,15 @@ function App() {
                 </div>
               </div>
 
-              {/* Roster Cards Grid (Centered flex container) */}
+              {/* Roster Cards Grid */}
               {loading ? (
-                <div className="py-12 text-center text-gray-400">
+                <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                   <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-400 mb-2" />
                   Loading registrations...
                 </div>
               ) : filteredPublicRegistrations.length === 0 ? (
-                <div className="py-12 text-center text-gray-500">
-                  {searchQuery ? 'No runners matching your search.' : 'No registrations yet.'}
+                <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                  {searchQuery ? 'No runners matching your search.' : 'No registrations yet. Be the first to register!'}
                 </div>
               ) : (
                 <div className="runner-grid">
@@ -789,14 +776,14 @@ function App() {
       </div>
 
       {/* Footer Area with Sora credit badge */}
-      <footer className="max-w-6xl mx-auto px-4 mt-16 text-center space-y-4">
-        <div className="text-xs text-gray-500">
+      <footer className="footer-container">
+        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
           <p>© 2026 Limkokwing SiemReap Fun Run. All rights reserved.</p>
-          <p className="mt-1">Designed with a modern Liquid Glass Theme.</p>
+          <p style={{ marginTop: '0.25rem' }}>Designed with a modern Liquid Glass Theme.</p>
         </div>
 
         {/* Credit Badge */}
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-cyan-500/5 border border-cyan-500/25 text-[10px] text-cyan-400 font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/5">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-cyan-500/5 border border-cyan-500/25 text-[10px] text-cyan-400 font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/5" style={{ display: 'inline-flex', padding: '0.4rem 1rem', background: 'rgba(0, 240, 255, 0.05)', border: '1px solid rgba(0, 240, 255, 0.25)', borderRadius: '999px', fontSize: '0.65rem', color: '#00f0ff', letterSpacing: '1px', textTransform: 'uppercase', gap: '0.35rem' }}>
           <Smile className="w-3 h-3 text-cyan-400" />
           <span>Made by Sora</span>
         </div>
@@ -809,35 +796,34 @@ function App() {
         className="registration-modal"
         aria-modal="true"
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.01]">
-          <div>
-            <h3 className="font-heading text-xl font-bold text-white flex items-center gap-2">
+        <div className="modal-header">
+          <div className="modal-header-title">
+            <h3>
               <UserPlus className="w-5 h-5 text-cyan-400" />
               Fun Run Registration
             </h3>
-            <p className="text-xs text-gray-400">Complete details below to secure your spot</p>
+            <p>Complete details below to secure your spot</p>
           </div>
           <button 
             onClick={closeModal}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            className="clear-search-btn"
+            style={{ position: 'static', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer' }}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleRegister} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleRegister} className="modal-body-form">
           {formError && (
-            <div className="p-3 bg-red-950/60 border border-red-500/20 text-red-200 rounded-xl text-sm flex items-start gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="form-warning" style={{ padding: '0.85rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '14px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <span>{formError}</span>
             </div>
           )}
 
           {/* Full Name */}
-          <div className="space-y-2">
-            <label htmlFor="full-name" className="block text-sm font-semibold text-gray-300">
-              Full Name
-            </label>
+          <div className="form-group">
+            <label htmlFor="full-name" className="form-label">Full Name</label>
             <input
               type="text"
               id="full-name"
@@ -850,10 +836,8 @@ function App() {
           </div>
 
           {/* BIB Name */}
-          <div className="space-y-2">
-            <label htmlFor="bib-name" className="block text-sm font-semibold text-gray-300">
-              Name on the BIB (Nickname)
-            </label>
+          <div className="form-group">
+            <label htmlFor="bib-name" className="form-label">Name on the BIB (Nickname)</label>
             <input
               type="text"
               id="bib-name"
@@ -867,10 +851,8 @@ function App() {
           </div>
 
           {/* Phone */}
-          <div className="space-y-2">
-            <label htmlFor="phone-number" className="block text-sm font-semibold text-gray-300">
-              Phone Number
-            </label>
+          <div className="form-group">
+            <label htmlFor="phone-number" className="form-label">Phone Number</label>
             <input
               type="tel"
               id="phone-number"
@@ -885,15 +867,15 @@ function App() {
               className="glass-input"
             />
             {phoneWarning && (
-              <p className="text-xs text-red-400 flex items-center gap-1 mt-1 font-medium">
+              <p className="form-warning">
                 <AlertTriangle className="w-3.5 h-3.5" /> {phoneWarning}
               </p>
             )}
           </div>
 
           {/* Gender */}
-          <div className="space-y-2">
-            <span className="block text-sm font-semibold text-gray-300">Gender</span>
+          <div className="form-group">
+            <span className="form-label">Gender</span>
             <div className="custom-radio-group">
               <label className="custom-radio-card">
                 <input
@@ -919,8 +901,8 @@ function App() {
           </div>
 
           {/* Class */}
-          <div className="space-y-2">
-            <label htmlFor="class-select" className="block text-sm font-semibold text-gray-300">Class / Category</label>
+          <div className="form-group">
+            <label htmlFor="class-select" className="form-label">Class / Category</label>
             <select
               id="class-select"
               value={className}
@@ -934,8 +916,8 @@ function App() {
           </div>
 
           {/* Compete */}
-          <div className="space-y-2">
-            <span className="block text-sm font-semibold text-gray-300">Would you like to compete for the prize?</span>
+          <div className="form-group">
+            <span className="form-label">Would you like to compete for the prize?</span>
             <div className="custom-radio-group">
               <label className="custom-radio-card">
                 <input
@@ -961,8 +943,8 @@ function App() {
           </div>
 
           {/* T-Shirt */}
-          <div className="space-y-2">
-            <span className="block text-sm font-semibold text-gray-300">T-Shirt Size</span>
+          <div className="form-group">
+            <span className="form-label">T-Shirt Size</span>
             <div className="t-shirt-grid">
               {['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'].map(size => (
                 <label key={size} className="custom-radio-card">
@@ -980,8 +962,8 @@ function App() {
           </div>
 
           {/* BIB Number */}
-          <div className="space-y-2">
-            <label htmlFor="bib-number" className="block text-sm font-semibold text-gray-300">Choose 4-Digit BIB Number</label>
+          <div className="form-group">
+            <label htmlFor="bib-number" className="form-label">Choose 4-Digit BIB Number</label>
             <input
               type="text"
               id="bib-number"
@@ -991,49 +973,51 @@ function App() {
               placeholder="e.g. 0007"
               value={bibNumber}
               onChange={(e) => handleBibChange(e.target.value)}
-              className="glass-input tracking-widest font-heading font-bold text-center text-lg"
+              className="glass-input tracking-widest font-heading"
+              style={{ fontWeight: 700, fontSize: '1.25rem', textAlign: 'center' }}
             />
             {bibWarning ? (
-              <p className="text-xs text-red-400 flex items-center gap-1 mt-1 font-medium">
+              <p className="form-warning">
                 <AlertTriangle className="w-3.5 h-3.5" /> {bibWarning}
               </p>
             ) : bibNumber.length === 4 ? (
-              <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1 font-medium">
+              <p className="form-success">
                 <Check className="w-3.5 h-3.5" /> BIB Number {bibNumber} is available!
               </p>
             ) : null}
-            <p className="text-[11px] text-gray-500">Must be exactly 4 digits. (e.g. 0001, 0023, 9999).</p>
+            <p className="form-hint">Must be exactly 4 digits. (e.g. 0001, 0023, 9999).</p>
           </div>
 
           {/* Telegram Channel */}
-          <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1">
+          <div className="telegram-pod">
+            <div className="telegram-info">
+              <p className="telegram-label">
                 <Send className="w-3.5 h-3.5" /> Telegram Updates
               </p>
-              <p className="text-xs text-gray-400 mt-1">Join the official Telegram Channel to stay updated on event news.</p>
+              <p className="telegram-desc">Join the official Telegram Channel to stay updated on event news.</p>
             </div>
             <a 
               href="https://t.me/+YR_yDNr5CaJjNTI1" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="btn-secondary py-2 px-3 text-xs flex items-center gap-1 text-cyan-400 hover:text-white"
+              className="btn-secondary"
+              style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}
             >
               Join Channel
             </a>
           </div>
 
           {/* Waiver */}
-          <div className="space-y-3 pt-2">
-            <span className="block text-sm font-semibold text-gray-300 flex items-center gap-1.5">
+          <div className="form-group" style={{ paddingTop: '0.5rem' }}>
+            <span className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <ShieldCheck className="w-4 h-4 text-cyan-400" />
               Health & Liability Waiver
             </span>
-            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-gray-400 leading-relaxed">
+            <div className="waiver-text-box">
               "I confirm that I am physically fit to participate in a 3KM run and accept full responsibility for my own safety during the event."
             </div>
             
-            <label className="checkbox-container">
+            <label className="checkbox-container" style={{ marginTop: '0.5rem' }}>
               <input
                 type="checkbox"
                 checked={waiverAccepted}
@@ -1041,14 +1025,14 @@ function App() {
                 required
               />
               <div className="checkbox-box"></div>
-              <span className="text-sm text-gray-300 font-medium select-none">
+              <span style={{ fontSize: '0.9rem', color: '#cbd5e1', fontWeight: 500, userSelect: 'none' }}>
                 I agree and accept.
               </span>
             </label>
           </div>
 
           {/* Footer Submit */}
-          <div className="pt-4 border-t border-white/5 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 bg-white/[0.01]">
+          <div className="modal-footer">
             <button 
               type="button" 
               onClick={closeModal}
