@@ -456,15 +456,12 @@ function App() {
         {/* Navigation bar with exact centered container boundaries */}
         <nav className="glass-nav">
           <div className="nav-container">
-            <div className="cursor-pointer" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }} onClick={() => navigateTo('/')}>
-              <div className="stat-icon-box pulse-glow">
-                <Activity className="w-5 h-5 text-white" />
-              </div>
+            <div className="cursor-pointer" style={{ display: 'flex', alignItems: 'center' }} onClick={() => navigateTo('/')}>
               <div>
-                <h1 className="font-heading text-gradient glow-text" style={{ fontSize: '1.25rem', fontWeight: 800 }}>
+                <h1 className="font-heading text-gradient glow-text" style={{ fontSize: '1.45rem', fontWeight: 800 }}>
                   LIMKOKWING
                 </h1>
-                <p className="font-heading" style={{ fontSize: '0.65rem', color: '#00f0ff', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '-2px' }}>
+                <p className="font-heading" style={{ fontSize: '0.7rem', color: '#00f0ff', textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '-2px' }}>
                   SiemReap Fun Run
                 </p>
               </div>
@@ -780,8 +777,7 @@ function App() {
         </div>
 
         {/* Credit Badge */}
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-cyan-500/5 border border-cyan-500/25 text-[10px] text-cyan-400 font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/5" style={{ display: 'inline-flex', padding: '0.4rem 1rem', background: 'rgba(0, 240, 255, 0.05)', border: '1px solid rgba(0, 240, 255, 0.25)', borderRadius: '999px', fontSize: '0.65rem', color: '#00f0ff', letterSpacing: '1px', textTransform: 'uppercase', gap: '0.35rem' }}>
-          <Smile className="w-3 h-3 text-cyan-400" />
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-cyan-500/5 border border-cyan-500/25 text-[10px] text-cyan-400 font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/5" style={{ display: 'inline-flex', padding: '0.4rem 1rem', background: 'rgba(0, 240, 255, 0.05)', border: '1px solid rgba(0, 240, 255, 0.25)', borderRadius: '999px', fontSize: '0.65rem', color: '#00f0ff', letterSpacing: '1px', textTransform: 'uppercase' }}>
           <span>Made by Sora</span>
         </div>
       </footer>
