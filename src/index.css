@@ -131,14 +131,20 @@
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 100%;
   width: 100%;
   margin: 0 auto;
-  padding: 1.25rem 2rem;
+  padding: 1.25rem 4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .nav-container {
+    padding: 1.25rem 2rem;
+  }
 }
 
 .main-content {
