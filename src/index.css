@@ -149,10 +149,10 @@
 }
 
 .main-content {
-  max-width: 1400px;
+  max-width: 1200px;
   width: 100%;
-  margin: 2.5rem auto 0 auto;
-  padding: 0 2rem;
+  margin: 1.5rem auto 0 auto;
+  padding: 0 1.25rem;
   flex-grow: 1;
 }
 
@@ -209,7 +209,7 @@
    ========================================================================== */
 .hero-section {
   text-align: center;
-  margin-bottom: 3.5rem;
+  margin-bottom: 2rem;
 }
 
 .hero-subtitle {
@@ -251,7 +251,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
-  margin-bottom: 3.5rem;
+  margin-bottom: 2.25rem;
   width: 100%;
   max-width: 620px;
   margin-left: auto;
@@ -330,8 +330,8 @@
    7. ROSTER CONTAINER & SEARCH
    ========================================================================== */
 .roster-panel {
-  padding: 2.5rem 2rem;
-  margin-bottom: 2.5rem;
+  padding: 1.75rem 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .roster-header {
@@ -340,7 +340,7 @@
   align-items: center;
   text-align: center;
   gap: 1.25rem;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .roster-title-box h3 {
