@@ -959,7 +959,7 @@ function App() {
                 <span>Limkokwing Siem Reap Fun Run</span>
               </div>
               <h2 className="hero-title">
-                Claim Your <span className="text-gradient glow-text">BIB Number</span>
+                3KM Fun Run <span className="text-gradient glow-text">Registration</span>
               </h2>
               <p className="hero-desc">
                 Choose your unique 4-digit code. Compete for awards or join for fun! Search below to verify which numbers are already taken.
