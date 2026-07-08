@@ -356,8 +356,9 @@ function App() {
     if (!fullName.trim()) return setFormError('Full Name is required.');
     if (!bibName.trim()) return setFormError('BIB Name is required.');
     if (!phoneNumber.trim()) return setFormError('Phone Number is required.');
+    if (!bibNumber) return setFormError('BIB Number is required.');
     if (bibNumber.length !== 4) return setFormError('BIB Number must be exactly 4 digits.');
-    if (!waiverAccepted) return setFormError('You must agree to the Health & Liability Waiver.');
+    if (!waiverAccepted) return setFormError('You must check "I agree and accept" to the Health & Liability Waiver.');
     if (bibWarning) return setFormError('The BIB number is already taken. Please choose another.');
     if (phoneWarning) return setFormError('This phone number is already registered.');
 
@@ -1099,7 +1100,6 @@ function App() {
             <input
               type="text"
               id="full-name"
-              required
               placeholder="e.g. Johnathan Doe"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -1113,7 +1113,6 @@ function App() {
             <input
               type="text"
               id="bib-name"
-              required
               maxLength="15"
               placeholder="e.g. Johnny (Max 15 chars)"
               value={bibName}
@@ -1128,7 +1127,6 @@ function App() {
             <input
               type="tel"
               id="phone-number"
-              required
               placeholder="e.g. +60123456789"
               value={phoneNumber}
               onBlur={checkPhoneDuplicate}
@@ -1253,8 +1251,6 @@ function App() {
             <input
               type="text"
               id="bib-number"
-              required
-              pattern="\d{4}"
               inputmode="numeric"
               placeholder="e.g. 0007"
               value={bibNumber}
@@ -1308,7 +1304,6 @@ function App() {
                 type="checkbox"
                 checked={waiverAccepted}
                 onChange={(e) => setWaiverAccepted(e.target.checked)}
-                required
               />
               <div className="checkbox-box"></div>
               <span style={{ fontSize: '0.9rem', color: '#cbd5e1', fontWeight: 500, userSelect: 'none' }}>
@@ -1385,7 +1380,6 @@ function App() {
             <input
               type="text"
               id="edit-full-name"
-              required
               placeholder="e.g. Johnathan Doe"
               value={editFullName}
               onChange={(e) => setEditFullName(e.target.value)}
@@ -1399,7 +1393,6 @@ function App() {
             <input
               type="text"
               id="edit-bib-name"
-              required
               maxLength="15"
               placeholder="e.g. Johnny (Max 15 chars)"
               value={editBibName}
@@ -1414,7 +1407,6 @@ function App() {
             <input
               type="tel"
               id="edit-phone-number"
-              required
               placeholder="e.g. +60123456789"
               value={editPhoneNumber}
               onBlur={() => checkEditPhoneDuplicate(editPhoneNumber, editingRecord?.id)}
@@ -1539,8 +1531,6 @@ function App() {
             <input
               type="text"
               id="edit-bib-number"
-              required
-              pattern="\d{4}"
               inputmode="numeric"
               placeholder="e.g. 0007"
               value={editBibNumber}
