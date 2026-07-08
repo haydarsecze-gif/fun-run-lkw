@@ -1330,7 +1330,7 @@ function App() {
             <button 
               type="submit" 
               className="btn-primary"
-              disabled={submitting || !!bibWarning || !!phoneWarning || !waiverAccepted}
+              disabled={submitting}
             >
               {submitting ? (
                 <>
@@ -1573,7 +1573,7 @@ function App() {
             <button 
               type="submit" 
               className="btn-primary"
-              disabled={editSubmitting || !!editBibWarning || !!editPhoneWarning}
+              disabled={editSubmitting}
             >
               {editSubmitting ? (
                 <>
