@@ -723,6 +723,14 @@ select.glass-input {
   border-color: var(--color-accent);
 }
 
+.hidden-radio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
 .custom-radio-card input[type="radio"] {
   position: absolute;
   opacity: 0;
@@ -730,10 +738,11 @@ select.glass-input {
   height: 0;
 }
 
-.custom-radio-card:has(input[type="radio"]:checked) {
+input.hidden-radio:checked + .custom-radio-card {
   background: rgba(0, 82, 255, 0.2);
   border-color: var(--color-accent);
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3),
+              inset 0 0 10px rgba(0, 240, 255, 0.1);
   color: #ffffff;
 }
 
@@ -782,7 +791,7 @@ select.glass-input {
   background: rgba(0, 240, 255, 0.08);
 }
 
-.checkbox-container:has(input[type="checkbox"]:checked) .checkbox-box {
+.checkbox-container input[type="checkbox"]:checked + .checkbox-box {
   background: var(--color-primary);
   border-color: var(--color-accent);
   box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
@@ -799,7 +808,7 @@ select.glass-input {
   margin-bottom: 2px;
 }
 
-.checkbox-container:has(input[type="checkbox"]:checked) .checkbox-box::after {
+.checkbox-container input[type="checkbox"]:checked + .checkbox-box::after {
   transform: rotate(45deg) scale(1);
 }
 

@@ -1149,24 +1149,29 @@ function App() {
           <div className="form-group">
             <span className="form-label">Gender</span>
             <div className="custom-radio-group">
-              <label className="custom-radio-card">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="Male"
-                  checked={gender === 'Male'}
-                  onChange={() => setGender('Male')}
-                />
+              <input
+                type="radio"
+                id="gender-male"
+                name="gender"
+                value="Male"
+                checked={gender === 'Male'}
+                onChange={() => setGender('Male')}
+                className="hidden-radio"
+              />
+              <label htmlFor="gender-male" className="custom-radio-card">
                 Male
               </label>
-              <label className="custom-radio-card">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="Female"
-                  checked={gender === 'Female'}
-                  onChange={() => setGender('Female')}
-                />
+
+              <input
+                type="radio"
+                id="gender-female"
+                name="gender"
+                value="Female"
+                checked={gender === 'Female'}
+                onChange={() => setGender('Female')}
+                className="hidden-radio"
+              />
+              <label htmlFor="gender-female" className="custom-radio-card">
                 Female
               </label>
             </div>
@@ -1191,24 +1196,29 @@ function App() {
           <div className="form-group">
             <span className="form-label">Would you like to compete for the prize?</span>
             <div className="custom-radio-group">
-              <label className="custom-radio-card">
-                <input
-                  type="radio"
-                  name="compete"
-                  value="Yes"
-                  checked={compete === 'Yes'}
-                  onChange={() => setCompete('Yes')}
-                />
+              <input
+                type="radio"
+                id="compete-yes"
+                name="compete"
+                value="Yes"
+                checked={compete === 'Yes'}
+                onChange={() => setCompete('Yes')}
+                className="hidden-radio"
+              />
+              <label htmlFor="compete-yes" className="custom-radio-card">
                 Yes
               </label>
-              <label className="custom-radio-card">
-                <input
-                  type="radio"
-                  name="compete"
-                  value="No"
-                  checked={compete === 'No'}
-                  onChange={() => setCompete('No')}
-                />
+
+              <input
+                type="radio"
+                id="compete-no"
+                name="compete"
+                value="No"
+                checked={compete === 'No'}
+                onChange={() => setCompete('No')}
+                className="hidden-radio"
+              />
+              <label htmlFor="compete-no" className="custom-radio-card">
                 No (Join for Fun)
               </label>
             </div>
@@ -1219,16 +1229,20 @@ function App() {
             <span className="form-label">T-Shirt Size</span>
             <div className="t-shirt-grid">
               {['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'].map(size => (
-                <label key={size} className="custom-radio-card">
+                <React.Fragment key={size}>
                   <input
                     type="radio"
+                    id={`size-${size}`}
                     name="t-shirt-size"
                     value={size}
                     checked={tShirtSize === size}
                     onChange={() => setTShirtSize(size)}
+                    className="hidden-radio"
                   />
-                  {size}
-                </label>
+                  <label htmlFor={`size-${size}`} className="custom-radio-card">
+                    {size}
+                  </label>
+                </React.Fragment>
               ))}
             </div>
           </div>
@@ -1421,24 +1435,29 @@ function App() {
           <div className="form-group">
             <span className="form-label">Gender</span>
             <div className="custom-radio-group">
-              <label className="custom-radio-card">
-                <input
-                  type="radio"
-                  name="edit-gender"
-                  value="Male"
-                  checked={editGender === 'Male'}
-                  onChange={() => setEditGender('Male')}
-                />
+              <input
+                type="radio"
+                id="edit-gender-male"
+                name="edit-gender"
+                value="Male"
+                checked={editGender === 'Male'}
+                onChange={() => setEditGender('Male')}
+                className="hidden-radio"
+              />
+              <label htmlFor="edit-gender-male" className="custom-radio-card">
                 Male
               </label>
-              <label className="custom-radio-card">
-                <input
-                  type="radio"
-                  name="edit-gender"
-                  value="Female"
-                  checked={editGender === 'Female'}
-                  onChange={() => setEditGender('Female')}
-                />
+
+              <input
+                type="radio"
+                id="edit-gender-female"
+                name="edit-gender"
+                value="Female"
+                checked={editGender === 'Female'}
+                onChange={() => setEditGender('Female')}
+                className="hidden-radio"
+              />
+              <label htmlFor="edit-gender-female" className="custom-radio-card">
                 Female
               </label>
             </div>
@@ -1463,24 +1482,29 @@ function App() {
           <div className="form-group">
             <span className="form-label">Would you like to compete for the prize?</span>
             <div className="custom-radio-group">
-              <label className="custom-radio-card">
-                <input
-                  type="radio"
-                  name="edit-compete"
-                  value="Yes"
-                  checked={editCompete === 'Yes'}
-                  onChange={() => setEditCompete('Yes')}
-                />
+              <input
+                type="radio"
+                id="edit-compete-yes"
+                name="edit-compete"
+                value="Yes"
+                checked={editCompete === 'Yes'}
+                onChange={() => setEditCompete('Yes')}
+                className="hidden-radio"
+              />
+              <label htmlFor="edit-compete-yes" className="custom-radio-card">
                 Yes
               </label>
-              <label className="custom-radio-card">
-                <input
-                  type="radio"
-                  name="edit-compete"
-                  value="No"
-                  checked={editCompete === 'No'}
-                  onChange={() => setEditCompete('No')}
-                />
+
+              <input
+                type="radio"
+                id="edit-compete-no"
+                name="edit-compete"
+                value="No"
+                checked={editCompete === 'No'}
+                onChange={() => setEditCompete('No')}
+                className="hidden-radio"
+              />
+              <label htmlFor="edit-compete-no" className="custom-radio-card">
                 No (Join for Fun)
               </label>
             </div>
@@ -1491,16 +1515,20 @@ function App() {
             <span className="form-label">T-Shirt Size</span>
             <div className="t-shirt-grid">
               {['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'].map(size => (
-                <label key={size} className="custom-radio-card">
+                <React.Fragment key={size}>
                   <input
                     type="radio"
+                    id={`edit-size-${size}`}
                     name="edit-t-shirt-size"
                     value={size}
                     checked={editTShirtSize === size}
                     onChange={() => setEditTShirtSize(size)}
+                    className="hidden-radio"
                   />
-                  {size}
-                </label>
+                  <label htmlFor={`edit-size-${size}`} className="custom-radio-card">
+                    {size}
+                  </label>
+                </React.Fragment>
               ))}
             </div>
           </div>
