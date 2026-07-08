@@ -414,7 +414,8 @@ function App() {
       try {
         const { data, error } = await supabase
           .from('registrations')
-          .insert([newRecord]);
+          .insert([newRecord])
+          .select();
 
         if (error) {
           if (error.code === '23505') {
@@ -429,6 +430,12 @@ function App() {
             }
           }
           throw error;
+        }
+
+        if (data && data[0]) {
+          // Prepend new registration to both views for instant UI updates
+          setRegistrations(prev => [data[0], ...prev]);
+          setAdminData(prev => [data[0], ...prev]);
         }
 
         closeModal();
@@ -465,11 +472,9 @@ function App() {
 
         if (error) throw error;
         
-        // Refresh admin table
-        const { data: refreshed, error: refreshErr } = await supabase
-          .rpc('get_all_registrations', { admin_password: adminPassword });
-        if (refreshErr) throw refreshErr;
-        setAdminData(refreshed || []);
+        // Update state instantly
+        setAdminData(prev => prev.filter(r => r.id !== targetId));
+        setRegistrations(prev => prev.filter(r => r.id !== targetId));
 
         showToast('Successfully deleted registration!');
       } catch (err) {
@@ -643,11 +648,28 @@ function App() {
           throw error;
         }
 
+        const updatedRecord = {
+          id: editingRecord.id,
+          created_at: editingRecord.created_at,
+          full_name: editFullName.trim(),
+          bib_name: editBibName.trim(),
+          phone_number: editPhoneNumber.trim(),
+          gender: editGender,
+          class_name: editClassName,
+          compete: editCompete,
+          t_shirt_size: editTShirtSize,
+          bib_number: editBibNumber
+        };
+
+        // Update local state instantly
+        setAdminData(prev => prev.map(r => r.id === editingRecord.id ? updatedRecord : r));
+        setRegistrations(prev => prev.map(r => r.id === editingRecord.id ? updatedRecord : r));
+
         closeEditModal();
         showToast('Successfully updated registration!');
         setEditSubmitting(false);
 
-        // Refresh admin table in the background
+        // Keep background sync to guarantee state
         supabase
           .rpc('get_all_registrations', { admin_password: adminPassword })
           .then(({ data: refreshed, error: refreshErr }) => {
