@@ -47,7 +47,7 @@
     --color-card-bg: linear-gradient(135deg, rgba(6, 12, 32, 0.8) 0%, rgba(10, 24, 61, 0.55) 100%);
     --color-border: rgba(0, 240, 255, 0.2);
     --color-border-glow: rgba(0, 240, 255, 0.6);
-    --color-primary: #0052ff;
+    --color-primary: #0088ff;
     --color-accent: #00f0ff;
     --color-text-title: #ffffff;
     --color-text-body: #cbd5e1;
@@ -55,7 +55,7 @@
     
     --glass-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 
                     inset 0 0 25px rgba(0, 240, 255, 0.06),
-                    0 0 35px rgba(0, 82, 255, 0.12);
+                    0 0 35px rgba(0, 136, 255, 0.15);
     --glass-blur: blur(30px) saturate(220%);
     --font-heading: 'Syne', sans-serif;
     --font-body: 'Space Grotesk', sans-serif;
