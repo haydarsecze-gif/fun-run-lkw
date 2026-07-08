@@ -22,6 +22,16 @@ import {
 } from 'lucide-react';
 import { supabase, isMockMode } from './supabaseClient';
 
+const SIZE_LABELS = {
+  'S': 'S (40-50kg)',
+  'M': 'M (45-55kg)',
+  'L': 'L (50-65kg)',
+  'XL': 'XL (60-75kg)',
+  'XXL': '2XL (70-85kg)',
+  '3XL': '3XL (80-95kg)',
+  '4XL': '4XL (90-105kg)'
+};
+
 const INITIAL_MOCK_DATA = [
   {
     id: "1",
@@ -1273,7 +1283,7 @@ function App() {
                     className="hidden-radio"
                   />
                   <label htmlFor={`size-${size}`} className="custom-radio-card">
-                    {size}
+                    {SIZE_LABELS[size]}
                   </label>
                 </React.Fragment>
               ))}
@@ -1565,7 +1575,7 @@ function App() {
                     className="hidden-radio"
                   />
                   <label htmlFor={`edit-size-${size}`} className="custom-radio-card">
-                    {size}
+                    {SIZE_LABELS[size]}
                   </label>
                 </React.Fragment>
               ))}
