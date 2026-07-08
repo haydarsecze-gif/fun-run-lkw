@@ -47,8 +47,7 @@ from registrations;
 -- 7. Grant select permissions on the view to public anonymous and authenticated roles
 grant select on public_registrations to anon, authenticated;
 
--- 8. Create a secure function to fetch all registration data with an admin password.
--- This keeps all sensitive fields (like phone numbers, class, shirt size) private from standard users.
+-- 8. Create a password-secured function to fetch all registration data (private columns included).
 create or replace function get_all_registrations(admin_password text)
 returns table (
   id uuid,
@@ -61,31 +60,89 @@ returns table (
   compete text,
   t_shirt_size text,
   bib_number text
-)
+) 
 language plpgsql
 security definer
 as $$
 begin
-  -- Default admin password is 'admin123' - you can modify this to anything you'd like
-  if admin_password = 'admin123' then
-    return query select 
-      r.id, 
-      r.created_at, 
-      r.full_name, 
-      r.bib_name, 
-      r.phone_number, 
-      r.gender, 
-      r.class_name, 
-      r.compete, 
-      r.t_shirt_size, 
-      r.bib_number 
-    from registrations r
-    order by r.created_at desc;
-  else
-    raise exception 'Invalid admin password';
+  -- Validate the admin password.
+  if admin_password <> 'admin123' then
+    raise exception 'Unauthorized Access: Invalid Password';
   end if;
+
+  return query
+  select 
+    r.id,
+    r.created_at,
+    r.full_name,
+    r.bib_name,
+    r.phone_number,
+    r.gender,
+    r.class_name,
+    r.compete,
+    r.t_shirt_size,
+    r.bib_number
+  from registrations r
+  order by r.created_at desc;
 end;
 $$;
 
--- Grant execute permissions on the function to public anonymous and authenticated roles
+-- 9. Create a password-secured function to delete a registration
+create or replace function delete_registration_admin(
+  admin_password text,
+  target_id uuid
+)
+returns boolean
+language plpgsql
+security definer
+as $$
+begin
+  if admin_password <> 'admin123' then
+    raise exception 'Unauthorized Access: Invalid Password';
+  end if;
+
+  delete from registrations where id = target_id;
+  return true;
+end;
+$$;
+
+-- 10. Create a password-secured function to update a registration
+create or replace function update_registration_admin(
+  admin_password text,
+  target_id uuid,
+  new_full_name text,
+  new_bib_name text,
+  new_phone_number text,
+  new_gender text,
+  new_class_name text,
+  new_compete text,
+  new_t_shirt_size text,
+  new_bib_number text
+)
+returns boolean
+language plpgsql
+security definer
+as $$
+begin
+  if admin_password <> 'admin123' then
+    raise exception 'Unauthorized Access: Invalid Password';
+  end if;
+
+  update registrations
+  set 
+    full_name = new_full_name,
+    bib_name = new_bib_name,
+    phone_number = new_phone_number,
+    gender = new_gender,
+    class_name = new_class_name,
+    compete = new_compete,
+    t_shirt_size = new_t_shirt_size,
+    bib_number = new_bib_number
+  where id = target_id;
+
+  return true;
+end;
+$$;
+
+-- Grant execute permissions
 grant execute on function get_all_registrations(text) to anon, authenticated;

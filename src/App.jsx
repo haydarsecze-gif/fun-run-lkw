@@ -16,7 +16,9 @@ import {
   Database,
   Lock,
   Download,
-  ArrowLeft
+  ArrowLeft,
+  Edit2,
+  Trash2
 } from 'lucide-react';
 import { supabase, isMockMode } from './supabaseClient';
 
@@ -111,6 +113,22 @@ function App() {
   const [bibNumber, setBibNumber] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
 
+  // Edit Modal State
+  const editModalRef = useRef(null);
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [editFullName, setEditFullName] = useState('');
+  const [editBibName, setEditBibName] = useState('');
+  const [editPhoneNumber, setEditPhoneNumber] = useState('');
+  const [editGender, setEditGender] = useState('Male');
+  const [editClassName, setEditClassName] = useState('S2A');
+  const [editCompete, setEditCompete] = useState('Yes');
+  const [editTShirtSize, setEditTShirtSize] = useState('M');
+  const [editBibNumber, setEditBibNumber] = useState('');
+  const [editBibWarning, setEditBibWarning] = useState('');
+  const [editPhoneWarning, setEditPhoneWarning] = useState('');
+  const [editFormError, setEditFormError] = useState('');
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
   // Warnings / Validation State
   const [bibWarning, setBibWarning] = useState('');
   const [phoneWarning, setPhoneWarning] = useState('');
@@ -118,7 +136,7 @@ function App() {
 
   const modalRef = useRef(null);
 
-  // Path check routing listener
+  // Route listener
   useEffect(() => {
     const checkPath = () => {
       setIsAdminRoute(window.location.pathname === '/admin');
@@ -423,6 +441,223 @@ function App() {
     }
   };
 
+  // Admin Delete Registration Action
+  const handleDeleteClick = async (targetId, name, bibNum) => {
+    if (!window.confirm(`Are you sure you want to delete registration for ${name} (BIB: ${bibNum})?`)) {
+      return;
+    }
+
+    if (isMockMode) {
+      const stored = JSON.parse(localStorage.getItem('funrun_registrations') || '[]');
+      const updated = stored.filter(r => r.id !== targetId);
+      localStorage.setItem('funrun_registrations', JSON.stringify(updated));
+      setAdminData(updated);
+      setRegistrations(updated);
+      showToast('Deleted participant registration (Mock Mode)');
+    } else {
+      try {
+        const { error } = await supabase
+          .rpc('delete_registration_admin', { 
+            admin_password: adminPassword, 
+            target_id: targetId 
+          });
+
+        if (error) throw error;
+        
+        // Refresh admin table
+        const { data: refreshed, error: refreshErr } = await supabase
+          .rpc('get_all_registrations', { admin_password: adminPassword });
+        if (refreshErr) throw refreshErr;
+        setAdminData(refreshed || []);
+
+        showToast('Successfully deleted registration!');
+      } catch (err) {
+        console.error('Error deleting:', err);
+        showToast(err.message || 'Error deleting registration', 'error');
+      }
+    }
+  };
+
+  // Admin Edit Actions & Modal handlers
+  const handleEditClick = (record) => {
+    setEditingRecord(record);
+    setEditFullName(record.full_name || '');
+    setEditBibName(record.bib_name || '');
+    setEditPhoneNumber(record.phone_number || '');
+    setEditGender(record.gender || 'Male');
+    setEditClassName(record.class_name || 'S2A');
+    setEditCompete(record.compete || 'Yes');
+    setEditTShirtSize(record.t_shirt_size || 'M');
+    setEditBibNumber(record.bib_number || '');
+    setEditBibWarning('');
+    setEditPhoneWarning('');
+    setEditFormError('');
+    
+    if (editModalRef.current) {
+      editModalRef.current.showModal();
+    }
+  };
+
+  const closeEditModal = () => {
+    if (editModalRef.current) {
+      editModalRef.current.close();
+    }
+    setEditingRecord(null);
+  };
+
+  const handleEditBackdropClick = (e) => {
+    if (editModalRef.current && e.target === editModalRef.current) {
+      closeEditModal();
+    }
+  };
+
+  const handleEditBibChange = (val, id) => {
+    const sanitized = val.replace(/\D/g, '').slice(0, 4);
+    setEditBibNumber(sanitized);
+    setEditBibWarning('');
+
+    if (sanitized.length === 4) {
+      checkEditBibTaken(sanitized, id);
+    }
+  };
+
+  const checkEditBibTaken = async (number, currentId) => {
+    if (isMockMode) {
+      const taken = adminData.some(r => r.bib_number === number && r.id !== currentId);
+      if (taken) {
+        setEditBibWarning(`BIB number ${number} is already taken!`);
+      }
+    } else {
+      try {
+        const { data, error } = await supabase
+          .from('public_registrations')
+          .select('id, bib_number')
+          .eq('bib_number', number)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data && data.id !== currentId) {
+          setEditBibWarning(`BIB number ${number} is already taken!`);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const checkEditPhoneDuplicate = async (phone, id) => {
+    if (!phone) return;
+    setEditPhoneWarning('');
+
+    if (isMockMode) {
+      const taken = adminData.some(r => r.phone_number === phone && r.id !== id);
+      if (taken) {
+        setEditPhoneWarning('This phone number is already registered!');
+      }
+    }
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    setEditFormError('');
+
+    if (!editFullName.trim()) return setEditFormError('Full Name is required.');
+    if (!editBibName.trim()) return setEditFormError('BIB Name is required.');
+    if (!editPhoneNumber.trim()) return setEditFormError('Phone Number is required.');
+    if (editBibNumber.length !== 4) return setEditFormError('BIB Number must be exactly 4 digits.');
+    if (editBibWarning) return setEditFormError('BIB number is already taken.');
+    if (editPhoneWarning) return setEditFormError('Phone number is already registered.');
+
+    setEditSubmitting(true);
+
+    const updatedRecord = {
+      full_name: editFullName.trim(),
+      bib_name: editBibName.trim(),
+      phone_number: editPhoneNumber.trim(),
+      gender: editGender,
+      class_name: editClassName,
+      compete: editCompete,
+      t_shirt_size: editTShirtSize,
+      bib_number: editBibNumber
+    };
+
+    if (isMockMode) {
+      setTimeout(() => {
+        const stored = JSON.parse(localStorage.getItem('funrun_registrations') || '[]');
+        
+        const bibTaken = stored.some(r => r.bib_number === editBibNumber && r.id !== editingRecord.id);
+        const phoneTaken = stored.some(r => r.phone_number === editPhoneNumber.trim() && r.id !== editingRecord.id);
+
+        if (bibTaken) {
+          setEditBibWarning(`BIB number ${editBibNumber} is already taken!`);
+          setEditFormError('Update failed: BIB number already taken.');
+          setEditSubmitting(false);
+          return;
+        }
+
+        if (phoneTaken) {
+          setEditPhoneWarning('Phone number already registered!');
+          setEditFormError('Update failed: Phone number already registered.');
+          setEditSubmitting(false);
+          return;
+        }
+
+        const updated = stored.map(r => r.id === editingRecord.id ? { ...r, ...updatedRecord } : r);
+        localStorage.setItem('funrun_registrations', JSON.stringify(updated));
+        
+        setAdminData(updated);
+        setRegistrations(updated);
+        setEditSubmitting(false);
+        closeEditModal();
+        showToast('Successfully updated participant registration (Mock Mode)!');
+      }, 500);
+    } else {
+      try {
+        const { error } = await supabase
+          .rpc('update_registration_admin', {
+            admin_password: adminPassword,
+            target_id: editingRecord.id,
+            new_full_name: editFullName.trim(),
+            new_bib_name: editBibName.trim(),
+            new_phone_number: editPhoneNumber.trim(),
+            new_gender: editGender,
+            new_class_name: editClassName,
+            new_compete: editCompete,
+            new_t_shirt_size: editTShirtSize,
+            new_bib_number: editBibNumber
+          });
+
+        if (error) {
+          if (error.code === '23505') {
+            const errStr = (error.message + ' ' + (error.details || '')).toLowerCase();
+            if (errStr.includes('bib_number') || errStr.includes('bib')) {
+              setEditBibWarning(`BIB number ${editBibNumber} is already taken!`);
+              throw new Error(`BIB number ${editBibNumber} is already taken. Please choose another.`);
+            }
+            if (errStr.includes('phone_number') || errStr.includes('phone')) {
+              setEditPhoneWarning('This phone number is already registered.');
+              throw new Error('This phone number has already been registered. One entry per person.');
+            }
+          }
+          throw error;
+        }
+
+        // Refresh admin table
+        const { data: refreshed, error: refreshErr } = await supabase
+          .rpc('get_all_registrations', { admin_password: adminPassword });
+        if (refreshErr) throw refreshErr;
+        setAdminData(refreshed || []);
+
+        setEditSubmitting(false);
+        closeEditModal();
+        showToast('Successfully updated registration!');
+      } catch (err) {
+        setEditFormError(err.message || 'An error occurred during update.');
+        setEditSubmitting(false);
+      }
+    }
+  };
+
   const filteredPublicRegistrations = registrations.filter(reg => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
@@ -453,8 +688,30 @@ function App() {
       {/* Liquid background grids */}
       <div className="background-glow" />
 
+      {/* Preview Alert */}
+      {isMockMode && (
+        <div className="bg-gradient-to-r from-blue-900/60 to-cyan-900/60 backdrop-blur-md border-b border-cyan-500/20 text-cyan-200 py-2.5 px-4 text-center text-xs flex items-center justify-center gap-2 z-50 sticky top-0">
+          <Database className="w-4 h-4 text-cyan-400 animate-pulse" />
+          <span>
+            <strong>Preview Active:</strong> Database variables missing. Sync locally using local storage. Set variables on Vercel for real database.
+          </span>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-xl border backdrop-blur-xl transition-all shadow-xl animate-in fade-in slide-in-from-bottom-5 duration-300 ${
+          toast.type === 'error' 
+            ? 'bg-red-950/80 border-red-500/30 text-red-200' 
+            : 'bg-emerald-950/80 border-emerald-500/30 text-emerald-200'
+        }`}>
+          {toast.type === 'error' ? <AlertTriangle className="w-5 h-5 text-red-400" /> : <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
+          <span className="text-sm font-medium">{toast.message}</span>
+        </div>
+      )}
+
       <div>
-        {/* Navigation bar with exact centered container boundaries */}
+        {/* Navigation bar */}
         <nav className="glass-nav">
           <div className="nav-container">
             <div className="cursor-pointer" style={{ display: 'flex', alignItems: 'center' }} onClick={() => navigateTo('/')}>
@@ -499,7 +756,7 @@ function App() {
           </div>
         </nav>
 
-        {/* Main layout container with fixed max-width, margins, and padding */}
+        {/* Main layout container */}
         {isAdminRoute ? (
           /* ==========================================
              ADMIN DASHBOARD ROUTE
@@ -561,7 +818,7 @@ function App() {
                 <div className="admin-header-row">
                   <div className="admin-title-box">
                     <h2>Admin Master Roster</h2>
-                    <p>Manage, search, and download all participant records</p>
+                    <p>Manage, search, edit, and delete participant records</p>
                   </div>
 
                   <div className="admin-controls-box">
@@ -623,13 +880,14 @@ function App() {
                         <th>Class</th>
                         <th>T-Shirt</th>
                         <th>Compete</th>
-                        <th style={{ textAlign: 'right' }}>Date</th>
+                        <th>Date</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredAdminRegistrations.length === 0 ? (
                         <tr>
-                          <td colSpan="9" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                          <td colSpan="10" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                             No participant records found.
                           </td>
                         </tr>
@@ -648,13 +906,33 @@ function App() {
                                 {reg.compete === 'Yes' ? 'Compete' : 'Fun Run'}
                               </span>
                             </td>
-                            <td style={{ textAlign: 'right', color: '#64748b' }}>
+                            <td style={{ color: '#64748b' }}>
                               {new Date(reg.created_at).toLocaleDateString(undefined, {
                                 month: 'short',
                                 day: 'numeric',
                                 hour: '2-digit',
                                 minute: '2-digit'
                               })}
+                            </td>
+                            <td style={{ textAlign: 'right' }}>
+                              <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                                <button
+                                  onClick={() => handleEditClick(reg)}
+                                  className="btn-secondary"
+                                  style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', borderRadius: '8px', gap: '0.2rem' }}
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteClick(reg.id, reg.full_name, reg.bib_number)}
+                                  className="btn-secondary"
+                                  style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', borderRadius: '8px', color: '#ef4444', borderColor: 'rgba(239,68,68,0.25)', gap: '0.2rem' }}
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -739,7 +1017,7 @@ function App() {
                 </div>
               </div>
 
-              {/* Roster Cards Grid */}
+              {/* Roster Grid */}
               {loading ? (
                 <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                   <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-400 mb-2" />
@@ -1047,6 +1325,235 @@ function App() {
                 </>
               ) : (
                 'Submit Registration'
+              )}
+            </button>
+          </div>
+
+        </form>
+      </dialog>
+
+      {/* Admin Edit Modal Dialog */}
+      <dialog 
+        ref={editModalRef} 
+        onClick={handleEditBackdropClick}
+        className="registration-modal"
+        aria-modal="true"
+      >
+        <div className="modal-header">
+          <div className="modal-header-title">
+            <h3>
+              <Edit2 className="w-5 h-5 text-cyan-400" />
+              Adjust Runner Information
+            </h3>
+            <p>Update database details for this participant</p>
+          </div>
+          <button 
+            type="button"
+            onClick={closeEditModal}
+            className="clear-search-btn"
+            style={{ position: 'static', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer' }}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleUpdateSubmit} className="modal-body-form">
+          {editFormError && (
+            <div className="form-warning" style={{ padding: '0.85rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '14px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <span>{editFormError}</span>
+            </div>
+          )}
+
+          {/* Full Name */}
+          <div className="form-group">
+            <label htmlFor="edit-full-name" className="form-label">Full Name</label>
+            <input
+              type="text"
+              id="edit-full-name"
+              required
+              placeholder="e.g. Johnathan Doe"
+              value={editFullName}
+              onChange={(e) => setEditFullName(e.target.value)}
+              className="glass-input"
+            />
+          </div>
+
+          {/* BIB Name */}
+          <div className="form-group">
+            <label htmlFor="edit-bib-name" className="form-label">Name on the BIB (Nickname)</label>
+            <input
+              type="text"
+              id="edit-bib-name"
+              required
+              maxLength="15"
+              placeholder="e.g. Johnny (Max 15 chars)"
+              value={editBibName}
+              onChange={(e) => setEditBibName(e.target.value)}
+              className="glass-input"
+            />
+          </div>
+
+          {/* Phone */}
+          <div className="form-group">
+            <label htmlFor="edit-phone-number" className="form-label">Phone Number</label>
+            <input
+              type="tel"
+              id="edit-phone-number"
+              required
+              placeholder="e.g. +60123456789"
+              value={editPhoneNumber}
+              onBlur={() => checkEditPhoneDuplicate(editPhoneNumber, editingRecord?.id)}
+              onChange={(e) => {
+                setEditPhoneNumber(e.target.value);
+                setEditPhoneWarning('');
+              }}
+              className="glass-input"
+            />
+            {editPhoneWarning && (
+              <p className="form-warning">
+                <AlertTriangle className="w-3.5 h-3.5" /> {editPhoneWarning}
+              </p>
+            )}
+          </div>
+
+          {/* Gender */}
+          <div className="form-group">
+            <span className="form-label">Gender</span>
+            <div className="custom-radio-group">
+              <label className="custom-radio-card">
+                <input
+                  type="radio"
+                  name="edit-gender"
+                  value="Male"
+                  checked={editGender === 'Male'}
+                  onChange={() => setEditGender('Male')}
+                />
+                Male
+              </label>
+              <label className="custom-radio-card">
+                <input
+                  type="radio"
+                  name="edit-gender"
+                  value="Female"
+                  checked={editGender === 'Female'}
+                  onChange={() => setEditGender('Female')}
+                />
+                Female
+              </label>
+            </div>
+          </div>
+
+          {/* Class */}
+          <div className="form-group">
+            <label htmlFor="edit-class-select" className="form-label">Class / Category</label>
+            <select
+              id="edit-class-select"
+              value={editClassName}
+              onChange={(e) => setEditClassName(e.target.value)}
+              className="glass-input"
+            >
+              {['S2A', 'S2B', 'S2C', 'S2D', 'S2E', 'S2F', 'S2G', 'S2H', 'S2I', 'S2J', 'S1A', 'Degree'].map(cls => (
+                <option key={cls} value={cls} className="bg-slate-900 text-white">{cls}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Compete */}
+          <div className="form-group">
+            <span className="form-label">Would you like to compete for the prize?</span>
+            <div className="custom-radio-group">
+              <label className="custom-radio-card">
+                <input
+                  type="radio"
+                  name="edit-compete"
+                  value="Yes"
+                  checked={editCompete === 'Yes'}
+                  onChange={() => setEditCompete('Yes')}
+                />
+                Yes
+              </label>
+              <label className="custom-radio-card">
+                <input
+                  type="radio"
+                  name="edit-compete"
+                  value="No"
+                  checked={editCompete === 'No'}
+                  onChange={() => setEditCompete('No')}
+                />
+                No (Join for Fun)
+              </label>
+            </div>
+          </div>
+
+          {/* T-Shirt */}
+          <div className="form-group">
+            <span className="form-label">T-Shirt Size</span>
+            <div className="t-shirt-grid">
+              {['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'].map(size => (
+                <label key={size} className="custom-radio-card">
+                  <input
+                    type="radio"
+                    name="edit-t-shirt-size"
+                    value={size}
+                    checked={editTShirtSize === size}
+                    onChange={() => setEditTShirtSize(size)}
+                  />
+                  {size}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* BIB Number */}
+          <div className="form-group">
+            <label htmlFor="edit-bib-number" className="form-label">Choose 4-Digit BIB Number</label>
+            <input
+              type="text"
+              id="edit-bib-number"
+              required
+              pattern="\d{4}"
+              inputmode="numeric"
+              placeholder="e.g. 0007"
+              value={editBibNumber}
+              onChange={(e) => handleEditBibChange(e.target.value, editingRecord?.id)}
+              className="glass-input tracking-widest font-heading"
+              style={{ fontWeight: 700, fontSize: '1.25rem', textAlign: 'center' }}
+            />
+            {editBibWarning ? (
+              <p className="form-warning">
+                <AlertTriangle className="w-3.5 h-3.5" /> {editBibWarning}
+              </p>
+            ) : editBibNumber.length === 4 ? (
+              <p className="form-success">
+                <Check className="w-3.5 h-3.5" /> BIB Number {editBibNumber} is available!
+              </p>
+            ) : null}
+            <p className="form-hint">Must be exactly 4 digits. (e.g. 0001, 0023, 9999).</p>
+          </div>
+
+          {/* Footer Submit */}
+          <div className="modal-footer">
+            <button 
+              type="button" 
+              onClick={closeEditModal}
+              className="btn-secondary"
+              disabled={editSubmitting}
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="btn-primary"
+              disabled={editSubmitting || !!editBibWarning || !!editPhoneWarning}
+            >
+              {editSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Save Changes'
               )}
             </button>
           </div>
