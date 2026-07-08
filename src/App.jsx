@@ -1075,7 +1075,7 @@ function App() {
       {/* Footer Area with Sora credit badge */}
       <footer className="footer-container">
         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-          <p>© 2026 Limkokwing Siem Reap Fun Run. All rights reserved.</p>
+          <p>© 2026 Limkokwing University. All rights reserved.</p>
           <p style={{ marginTop: '0.25rem' }}>Designed with a modern Liquid Glass Theme.</p>
         </div>
 
