@@ -880,9 +880,6 @@ input.hidden-radio:checked + .custom-radio-card {
   }
 }
 
-/* ==========================================================================
-   9. MODAL DIALOG OVERLAYS
-   ========================================================================== */
 dialog.registration-modal {
   border: 1.5px solid rgba(0, 240, 255, 0.3);
   border-radius: 32px;
@@ -905,46 +902,16 @@ dialog.registration-modal {
   padding: 0;
   overflow-y: auto !important; /* Allows native outer card scroll, preventing height squish */
   display: none;
-
-  /* Entry/Exit transition configuration */
-  opacity: 0;
-  transform: scale(0.95) translateY(15px);
-  transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              display 0.4s allow-discrete,
-              overlay 0.4s allow-discrete;
-  transition-behavior: allow-discrete;
 }
 
 dialog.registration-modal[open] {
-  display: block; /* Replaces flex to ensure children flow naturally */
-  opacity: 1;
-  transform: scale(1) translateY(0);
-
-  @starting-style {
-    opacity: 0;
-    transform: scale(0.95) translateY(15px);
-  }
+  display: block !important; /* Replaces flex to ensure children flow naturally */
 }
 
 dialog.registration-modal::backdrop {
-  background-color: rgba(1, 2, 6, 0);
-  backdrop-filter: blur(0px);
-  transition: 
-    display 0.4s allow-discrete,
-    overlay 0.4s allow-discrete,
-    background-color 0.4s ease-out,
-    backdrop-filter 0.4s ease-out;
-}
-
-dialog.registration-modal[open]::backdrop {
-  background-color: rgba(1, 2, 6, 0.9);
-  backdrop-filter: blur(16px);
-
-  @starting-style {
-    background-color: rgba(1, 2, 6, 0);
-    backdrop-filter: blur(0px);
-  }
+  background-color: rgba(1, 2, 6, 0.85);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
 
 /* ==========================================================================
