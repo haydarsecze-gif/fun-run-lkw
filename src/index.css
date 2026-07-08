@@ -564,8 +564,6 @@ select.glass-input {
 }
 
 .modal-body-form {
-  flex: 1;
-  overflow-y: auto;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -895,7 +893,7 @@ dialog.registration-modal {
               0 0 60px rgba(0, 240, 255, 0.15);
   width: 90% !important;
   max-width: 540px !important;
-  height: 85vh !important;
+  height: auto !important;
   max-height: 85vh !important;
   margin: auto !important;
   position: fixed !important;
@@ -905,9 +903,8 @@ dialog.registration-modal {
   right: 0 !important;
   color: #ffffff;
   padding: 0;
-  overflow: hidden;
+  overflow-y: auto !important; /* Allows native outer card scroll, preventing height squish */
   display: none;
-  flex-direction: column;
 
   /* Entry/Exit transition configuration */
   opacity: 0;
@@ -920,7 +917,7 @@ dialog.registration-modal {
 }
 
 dialog.registration-modal[open] {
-  display: flex;
+  display: block; /* Replaces flex to ensure children flow naturally */
   opacity: 1;
   transform: scale(1) translateY(0);
 
