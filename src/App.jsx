@@ -1341,7 +1341,7 @@ function App() {
             <button 
               type="submit" 
               className="btn-primary"
-              disabled={submitting}
+              disabled={submitting || !fullName.trim() || !bibName.trim() || !phoneNumber.trim() || bibNumber.length !== 4 || !waiverAccepted || !!bibWarning || !!phoneWarning}
             >
               {submitting ? (
                 <>
@@ -1591,7 +1591,7 @@ function App() {
             <button 
               type="submit" 
               className="btn-primary"
-              disabled={editSubmitting}
+              disabled={editSubmitting || !editFullName.trim() || !editBibName.trim() || !editPhoneNumber.trim() || editBibNumber.length !== 4 || !!editBibWarning || !!editPhoneWarning}
             >
               {editSubmitting ? (
                 <>
