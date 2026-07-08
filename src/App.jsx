@@ -431,10 +431,10 @@ function App() {
           throw error;
         }
 
-        await fetchPublicRegistrations();
-        setSubmitting(false);
         closeModal();
         showToast('Successfully registered!');
+        setSubmitting(false);
+        fetchPublicRegistrations();
       } catch (err) {
         setFormError(err.message || 'An error occurred during submission.');
         setSubmitting(false);
@@ -643,15 +643,19 @@ function App() {
           throw error;
         }
 
-        // Refresh admin table
-        const { data: refreshed, error: refreshErr } = await supabase
-          .rpc('get_all_registrations', { admin_password: adminPassword });
-        if (refreshErr) throw refreshErr;
-        setAdminData(refreshed || []);
-
-        setEditSubmitting(false);
         closeEditModal();
         showToast('Successfully updated registration!');
+        setEditSubmitting(false);
+
+        // Refresh admin table in the background
+        supabase
+          .rpc('get_all_registrations', { admin_password: adminPassword })
+          .then(({ data: refreshed, error: refreshErr }) => {
+            if (!refreshErr && refreshed) {
+              setAdminData(refreshed);
+            }
+          })
+          .catch(err => console.error('Background refresh error:', err));
       } catch (err) {
         setEditFormError(err.message || 'An error occurred during update.');
         setEditSubmitting(false);
@@ -1069,6 +1073,18 @@ function App() {
         className="registration-modal"
         aria-modal="true"
       >
+        {submitting && (
+          <div className="modal-loading-overlay">
+            <div className="loader-container">
+              <div className="loader-animation-wrapper">
+                <div className="loader-ring"></div>
+                <Activity className="loader-icon" />
+              </div>
+              <h4 className="loader-title">Registering Runner</h4>
+              <p className="loader-text">Securing your BIB number & saving details...</p>
+            </div>
+          </div>
+        )}
         <div className="modal-header">
           <div className="modal-header-title">
             <h3>
@@ -1348,6 +1364,18 @@ function App() {
         className="registration-modal"
         aria-modal="true"
       >
+        {editSubmitting && (
+          <div className="modal-loading-overlay">
+            <div className="loader-container">
+              <div className="loader-animation-wrapper">
+                <div className="loader-ring"></div>
+                <Activity className="loader-icon" />
+              </div>
+              <h4 className="loader-title">Updating Database</h4>
+              <p className="loader-text">Saving runner modifications...</p>
+            </div>
+          </div>
+        )}
         <div className="modal-header">
           <div className="modal-header-title">
             <h3>
