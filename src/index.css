@@ -1072,6 +1072,8 @@ dialog.registration-modal::backdrop {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  padding: 0 0.05em 0.12em 0.05em;
+  margin: 0 -0.05em -0.12em -0.05em;
 }
 
 .glow-text {
