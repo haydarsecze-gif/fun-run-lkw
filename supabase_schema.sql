@@ -144,5 +144,10 @@ begin
 end;
 $$;
 
--- Grant execute permissions
+-- Grant select and insert permissions on table to anon and authenticated roles
+grant select, insert on registrations to anon, authenticated;
+
+-- Grant execute permissions on the functions
 grant execute on function get_all_registrations(text) to anon, authenticated;
+grant execute on function delete_registration_admin(text, uuid) to anon, authenticated;
+grant execute on function update_registration_admin(text, uuid, text, text, text, text, text, text, text, text) to anon, authenticated;
