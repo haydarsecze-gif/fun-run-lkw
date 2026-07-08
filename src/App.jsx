@@ -725,7 +725,7 @@ function App() {
                   LIMKOKWING
                 </h1>
                 <p className="font-heading" style={{ fontSize: '0.7rem', color: '#00f0ff', textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '-2px' }}>
-                  SiemReap Fun Run
+                  Siem Reap Fun Run
                 </p>
               </div>
             </div>
@@ -956,7 +956,7 @@ function App() {
             {/* Hero Landing */}
             <section className="hero-section">
               <div className="hero-subtitle">
-                <span>Limkokwing SiemReap Fun Run</span>
+                <span>Limkokwing Siem Reap Fun Run</span>
               </div>
               <h2 className="hero-title">
                 Claim Your <span className="text-gradient glow-text">BIB Number</span>
@@ -1056,7 +1056,7 @@ function App() {
       {/* Footer Area with Sora credit badge */}
       <footer className="footer-container">
         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-          <p>© 2026 Limkokwing SiemReap Fun Run. All rights reserved.</p>
+          <p>© 2026 Limkokwing Siem Reap Fun Run. All rights reserved.</p>
           <p style={{ marginTop: '0.25rem' }}>Designed with a modern Liquid Glass Theme.</p>
         </div>
 
