@@ -438,10 +438,9 @@ function App() {
       }, 700);
     } else {
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('registrations')
-          .insert([newRecord])
-          .select();
+          .insert([newRecord]);
 
         if (error) {
           if (error.code === '23505') {
@@ -458,11 +457,22 @@ function App() {
           throw error;
         }
 
-        if (data && data[0]) {
-          // Prepend new registration to both views for instant UI updates
-          setRegistrations(prev => [data[0], ...prev]);
-          setAdminData(prev => [data[0], ...prev]);
-        }
+        // Safely fetch generated ID & timestamp from public view to bypass RLS restrictions
+        const { data: viewData } = await supabase
+          .from('public_registrations')
+          .select('id, created_at')
+          .eq('bib_number', bibNumber)
+          .maybeSingle();
+
+        const insertedRecord = {
+          id: viewData?.id || Math.random().toString(),
+          created_at: viewData?.created_at || new Date().toISOString(),
+          ...newRecord
+        };
+
+        // Prepend new registration to both views for instant UI updates
+        setRegistrations(prev => [insertedRecord, ...prev]);
+        setAdminData(prev => [insertedRecord, ...prev]);
 
         closeModal();
         showToast('Successfully registered!');
