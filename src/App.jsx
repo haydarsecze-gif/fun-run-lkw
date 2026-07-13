@@ -995,6 +995,18 @@ function App() {
               </p>
             </section>
 
+            {/* Centered Hero Register Button */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem' }}>
+              <button 
+                onClick={openModal}
+                className="btn-primary pulse-glow"
+                style={{ padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', gap: '0.65rem' }}
+              >
+                <UserPlus className="w-5 h-5" />
+                <span>Register BIB</span>
+              </button>
+            </div>
+
             {/* Centered Stats Cards Pods */}
             <section className="stats-row">
               {/* Card 1: Total Registered */}
