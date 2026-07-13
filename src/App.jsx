@@ -1020,6 +1020,14 @@ function App() {
               </div>
             </section>
 
+            {/* Hero Graphic Banner Container */}
+            <section className="glass-panel banner-panel">
+              <img 
+                src="/hero-banner.jpg" 
+                alt="Limkokwing Siem Reap Fun Run Runners" 
+                className="banner-image"
+              />
+            </section>
 
           </main>
         )}
