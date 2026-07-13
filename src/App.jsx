@@ -1320,7 +1320,7 @@ function App() {
               Health & Liability Waiver
             </span>
             <div className="waiver-text-box">
-              "I confirm that I am physically fit to participate in a 3KM run and accept full responsibility for my own safety during the event."
+              "I confirm that I am physically fit to participate in the run and accept full responsibility for my own safety during the event."
             </div>
             
             <label className="checkbox-container" style={{ marginTop: '0.5rem' }}>
