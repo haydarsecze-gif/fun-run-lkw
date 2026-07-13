@@ -128,7 +128,7 @@ function App() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [gender, setGender] = useState('Male');
   const [className, setClassName] = useState('S2A');
-  const [compete, setCompete] = useState('Yes');
+  const [compete, setCompete] = useState('No');
   const [tShirtSize, setTShirtSize] = useState('M');
   const [bibNumber, setBibNumber] = useState('');
   const [waiverAccepted, setWaiverAccepted] = useState(false);
@@ -300,7 +300,7 @@ function App() {
     setPhoneNumber('');
     setGender('Male');
     setClassName('S2A');
-    setCompete('Yes');
+    setCompete('No');
     setTShirtSize('M');
     setBibNumber('');
     setWaiverAccepted(false);
