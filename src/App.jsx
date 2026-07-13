@@ -1218,7 +1218,7 @@ function App() {
               onChange={(e) => setClassName(e.target.value)}
               className="glass-input"
             >
-              {['S2A', 'S2B', 'S2C', 'S2D', 'S2E', 'S2F', 'S2G', 'S2H', 'S2I', 'S2J', 'S1A', 'Degree'].map(cls => (
+              {['S2A', 'S2B', 'S2C', 'S2D', 'S2E', 'S2F', 'S2G', 'S2H', 'S2I', 'S2J', 'S1A', 'Degree', 'Other'].map(cls => (
                 <option key={cls} value={cls} className="bg-slate-900 text-white">{cls}</option>
               ))}
             </select>
@@ -1510,7 +1510,7 @@ function App() {
               onChange={(e) => setEditClassName(e.target.value)}
               className="glass-input"
             >
-              {['S2A', 'S2B', 'S2C', 'S2D', 'S2E', 'S2F', 'S2G', 'S2H', 'S2I', 'S2J', 'S1A', 'Degree'].map(cls => (
+              {['S2A', 'S2B', 'S2C', 'S2D', 'S2E', 'S2F', 'S2G', 'S2H', 'S2I', 'S2J', 'S1A', 'Degree', 'Other'].map(cls => (
                 <option key={cls} value={cls} className="bg-slate-900 text-white">{cls}</option>
               ))}
             </select>
