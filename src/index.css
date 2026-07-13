@@ -28,7 +28,7 @@
   }
 
   body {
-    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    font-family: 'Tahoma', system-ui, sans-serif;
     color: #f1f5f9;
     overflow-x: hidden;
     line-height: 1.5;
@@ -57,8 +57,8 @@
                     inset 0 0 25px rgba(0, 240, 255, 0.06),
                     0 0 35px rgba(0, 136, 255, 0.15);
     --glass-blur: blur(30px) saturate(220%);
-    --font-heading: 'Syne', sans-serif;
-    --font-body: 'Space Grotesk', sans-serif;
+    --font-heading: 'Tahoma', sans-serif;
+    --font-body: 'Tahoma', sans-serif;
   }
 }
 
