@@ -801,7 +801,7 @@ function App() {
                     className="btn-primary pulse-glow"
                   >
                     <UserPlus className="w-4 h-4" />
-                    <span className="nav-btn-text">Register BIB</span>
+                    <span className="nav-btn-text">Register</span>
                   </button>
                 </>
               )}
@@ -1019,7 +1019,7 @@ function App() {
                 style={{ width: '100%', maxWidth: '620px', padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', gap: '0.65rem' }}
               >
                 <UserPlus className="w-5 h-5" />
-                <span>Register BIB</span>
+                <span>Register</span>
               </button>
             </div>
 
@@ -1133,7 +1133,7 @@ function App() {
 
           {/* BIB Name */}
           <div className="form-group">
-            <label htmlFor="bib-name" className="form-label">Name on the BIB (Nickname)</label>
+            <label htmlFor="bib-name" className="form-label">Name on the Bib (Nickname)</label>
             <input
               type="text"
               id="bib-name"
@@ -1201,7 +1201,7 @@ function App() {
 
           {/* Class */}
           <div className="form-group">
-            <label htmlFor="class-select" className="form-label">Class / Category</label>
+            <label htmlFor="class-select" className="form-label">Class</label>
             <select
               id="class-select"
               value={className}
@@ -1425,7 +1425,7 @@ function App() {
 
           {/* BIB Name */}
           <div className="form-group">
-            <label htmlFor="edit-bib-name" className="form-label">Name on the BIB (Nickname)</label>
+            <label htmlFor="edit-bib-name" className="form-label">Name on the Bib (Nickname)</label>
             <input
               type="text"
               id="edit-bib-name"
@@ -1493,7 +1493,7 @@ function App() {
 
           {/* Class */}
           <div className="form-group">
-            <label htmlFor="edit-class-select" className="form-label">Class / Category</label>
+            <label htmlFor="edit-class-select" className="form-label">Class</label>
             <select
               id="edit-class-select"
               value={editClassName}
