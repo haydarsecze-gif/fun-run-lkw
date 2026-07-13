@@ -1020,64 +1020,7 @@ function App() {
               </div>
             </section>
 
-            {/* Public Roster list card panel */}
-            <section className="glass-panel roster-panel">
-              <div className="roster-header">
-                <div className="roster-title-box">
-                  <h3>Registered Roster</h3>
-                  <p>Check taken BIB numbers before registering</p>
-                </div>
 
-                {/* Search Bar Wrapper */}
-                <div className="search-wrapper">
-                  <span className="search-icon-box">
-                    <Search className="w-5 h-5" />
-                  </span>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search name or BIB number..."
-                    className="glass-input search-input"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="clear-search-btn"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Roster Grid */}
-              {loading ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-                  <Loader2 className="w-8 h-8 animate-spin mx-auto text-cyan-400 mb-2" />
-                  Loading registrations...
-                </div>
-              ) : filteredPublicRegistrations.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-                  {searchQuery ? 'No runners matching your search.' : 'No registrations yet. Be the first to register!'}
-                </div>
-              ) : (
-                <div className="runner-grid">
-                  {filteredPublicRegistrations.map((reg) => (
-                    <div key={reg.id} className="runner-card">
-                      <div className="bib-badge">
-                        <span className="bib-badge-num">{reg.bib_number}</span>
-                        <span className="bib-badge-label">BIB</span>
-                      </div>
-                      <div className="runner-info">
-                        <h4 className="runner-bib-name">{reg.bib_name}</h4>
-                        <p className="runner-full-name">{reg.full_name}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
           </main>
         )}
       </div>
