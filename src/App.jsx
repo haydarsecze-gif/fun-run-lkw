@@ -885,7 +885,7 @@ function App() {
                   </div>
 
                   <div className="admin-controls-box">
-                    <div className="admin-search-wrapper">
+                    <div className="admin-search-wrapper search-wrapper">
                       <span className="search-icon-box">
                         <Search className="w-4 h-4" />
                       </span>
@@ -895,14 +895,13 @@ function App() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search roster..."
                         className="glass-input search-input"
-                        style={{ fontSize: '0.85rem', padding: '0.65rem 1rem' }}
                       />
                     </div>
 
                     <button 
                       onClick={downloadExcel}
                       className="btn-primary"
-                      style={{ fontSize: '0.85rem', padding: '0.65rem 1.25rem' }}
+                      style={{ fontSize: '0.85rem', padding: '0.85rem 1.5rem', borderRadius: '16px' }}
                     >
                       <Download className="w-4 h-4" />
                       <span>Download Excel (CSV)</span>
@@ -918,11 +917,11 @@ function App() {
                   </div>
                   <div className="admin-stat-card">
                     <p className="admin-stat-label">Male</p>
-                    <p className="admin-stat-value" style={{ color: '#0052ff' }}>{adminData.filter(r => r.gender === 'Male').length}</p>
+                    <p className="admin-stat-value" style={{ color: '#38bdf8' }}>{adminData.filter(r => r.gender === 'Male').length}</p>
                   </div>
                   <div className="admin-stat-card">
                     <p className="admin-stat-label">Female</p>
-                    <p className="admin-stat-value" style={{ color: '#ff007f' }}>{adminData.filter(r => r.gender === 'Female').length}</p>
+                    <p className="admin-stat-value" style={{ color: '#fb7185' }}>{adminData.filter(r => r.gender === 'Female').length}</p>
                   </div>
                   <div className="admin-stat-card">
                     <p className="admin-stat-label">Competing</p>
@@ -960,7 +959,7 @@ function App() {
                             <td className="font-heading" style={{ fontWeight: 700, color: '#00f0ff' }}>{reg.bib_number}</td>
                             <td style={{ color: '#fff', fontWeight: 600 }}>{reg.bib_name}</td>
                             <td>{reg.full_name}</td>
-                            <td style={{ fontFamily: 'monospace', color: '#00f0ff' }}>{reg.phone_number}</td>
+                            <td style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{reg.phone_number}</td>
                             <td>{reg.gender}</td>
                             <td style={{ color: '#94a3b8' }}>{reg.class_name}</td>
                             <td style={{ fontWeight: 600 }}>{reg.t_shirt_size}</td>

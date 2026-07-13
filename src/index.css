@@ -977,14 +977,14 @@ dialog.registration-modal::backdrop {
 
 @media (min-width: 640px) {
   .admin-search-wrapper {
-    width: 260px;
+    width: 300px;
   }
 }
 
 .admin-stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  gap: 1.25rem;
   margin-bottom: 2.5rem;
 }
 
@@ -995,34 +995,50 @@ dialog.registration-modal::backdrop {
 }
 
 .admin-stat-card {
-  padding: 1.25rem;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.01);
-  text-align: center;
+  padding: 1.5rem 1.75rem;
+  border-radius: 24px;
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  background: linear-gradient(135deg, rgba(13, 27, 56, 0.85) 0%, rgba(6, 12, 32, 0.7) 100%);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 
+              inset 0 0 15px rgba(0, 240, 255, 0.05);
+  text-align: left;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-stat-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 20px 45px rgba(0, 240, 255, 0.25), 
+              0 0 25px rgba(0, 82, 255, 0.15);
+  transform: translateY(-4px) scale(1.02);
 }
 
 .admin-stat-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   font-weight: 700;
 }
 
 .admin-stat-value {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 2.2rem;
+  font-weight: 800;
   color: #ffffff;
-  margin-top: 4px;
+  margin-top: 6px;
+  font-family: var(--font-body);
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
+  line-height: 1;
 }
 
 .admin-table-container {
   overflow-x: auto;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(3, 5, 12, 0.5);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+  border-radius: 24px;
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  background: linear-gradient(180deg, rgba(6, 12, 32, 0.9) 0%, rgba(3, 5, 12, 0.95) 100%);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 
+              inset 0 0 20px rgba(0, 240, 255, 0.03),
+              0 0 35px rgba(0, 240, 255, 0.05);
 }
 
 .admin-table {
@@ -1032,24 +1048,33 @@ dialog.registration-modal::backdrop {
 }
 
 .admin-table th {
-  padding: 1.15rem 1.25rem;
-  font-size: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   font-weight: 700;
   color: var(--color-accent);
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 240, 255, 0.03);
+  border-bottom: 1.5px solid rgba(0, 240, 255, 0.25);
 }
 
 .admin-table td {
-  padding: 1.15rem 1.25rem;
-  font-size: 0.8rem;
+  padding: 1.25rem 1.5rem;
+  font-size: 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  vertical-align: middle;
+}
+
+.admin-table td a {
+  color: inherit !important;
+  text-decoration: none !important;
+  pointer-events: none;
 }
 
 .admin-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 240, 255, 0.02);
+  color: #ffffff;
 }
 
 .compete-tag {
@@ -1061,9 +1086,9 @@ dialog.registration-modal::backdrop {
 }
 
 .compete-tag.yes {
-  background: rgba(0, 82, 255, 0.12);
-  color: var(--color-accent);
-  border: 1px solid rgba(0, 240, 255, 0.2);
+  background: rgba(0, 136, 255, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(0, 136, 255, 0.25);
 }
 
 .compete-tag.no {
