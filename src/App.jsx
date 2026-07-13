@@ -36,7 +36,6 @@ const INSPIRING_SLOGANS = [
   "Run with passion, finish with pride. Every step brings you closer to your personal best!",
   "Your only limit is you. Lace up, step out, and let your journey begin.",
   "Unleash your potential, one stride at a time. The road to greatness is yours!",
-  "Run for the fun, strive for the win, and celebrate the steps we take together!",
   "Every mile is a milestone. Ignite your energy and run your own race!",
   "Strength doesn't come from what you can do. It comes from overcoming the things you once thought you couldn't."
 ];
