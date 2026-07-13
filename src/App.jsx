@@ -32,6 +32,15 @@ const SIZE_LABELS = {
   '4XL': '4XL (90-105kg)'
 };
 
+const INSPIRING_SLOGANS = [
+  "Run with passion, finish with pride. Every step brings you closer to your personal best!",
+  "Your only limit is you. Lace up, step out, and let your journey begin.",
+  "Unleash your potential, one stride at a time. The road to greatness is yours!",
+  "Run for the fun, strive for the win, and celebrate the steps we take together!",
+  "Every mile is a milestone. Ignite your energy and run your own race!",
+  "Strength doesn't come from what you can do. It comes from overcoming the things you once thought you couldn't."
+];
+
 const INITIAL_MOCK_DATA = [
   {
     id: "1",
@@ -104,6 +113,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [slogan, setSlogan] = useState('');
 
   // Admin Dashboard State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -154,6 +164,12 @@ function App() {
     checkPath();
     window.addEventListener('popstate', checkPath);
     return () => window.removeEventListener('popstate', checkPath);
+  }, []);
+
+  // Set random inspiring slogan on mount
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * INSPIRING_SLOGANS.length);
+    setSlogan(INSPIRING_SLOGANS[randomIndex]);
   }, []);
 
   const navigateTo = (path) => {
@@ -991,7 +1007,7 @@ function App() {
                 3KM Fun Run <span className="text-gradient glow-text">Registration</span>
               </h2>
               <p className="hero-desc">
-                Choose your unique 4-digit code. Compete for awards or join for fun! Search below to verify which numbers are already taken.
+                {slogan}
               </p>
             </section>
 
