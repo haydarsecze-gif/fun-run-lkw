@@ -160,6 +160,9 @@ create table if not exists config (
   value jsonb not null
 );
 
+-- Disable Row Level Security on config table so public can read the status
+alter table config disable row level security;
+
 -- Seed initial registration status
 insert into config (key, value)
 values ('registration_status', '{"open": true}'::jsonb)
