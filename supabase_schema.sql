@@ -151,3 +151,44 @@ grant select, insert on registrations to anon, authenticated;
 grant execute on function get_all_registrations(text) to anon, authenticated;
 grant execute on function delete_registration_admin(text, uuid) to anon, authenticated;
 grant execute on function update_registration_admin(text, uuid, text, text, text, text, text, text, text, text) to anon, authenticated;
+
+-- ==========================================================================
+-- 11. Global App Configuration Table & Functions
+-- ==========================================================================
+create table if not exists config (
+  key text primary key,
+  value jsonb not null
+);
+
+-- Seed initial registration status
+insert into config (key, value)
+values ('registration_status', '{"open": true}'::jsonb)
+on conflict (key) do nothing;
+
+-- Grant read permission to client-side roles
+grant select on config to anon, authenticated;
+
+-- Create secure RPC function to toggle registration status
+create or replace function set_registration_status(
+  admin_password text,
+  is_open boolean
+)
+returns boolean
+language plpgsql
+security definer
+as $$
+begin
+  if admin_password <> 'admin123' then
+    raise exception 'Unauthorized Access: Invalid Password';
+  end if;
+
+  insert into config (key, value)
+  values ('registration_status', jsonb_build_object('open', is_open))
+  on conflict (key) do update
+  set value = jsonb_build_object('open', is_open);
+
+  return true;
+end;
+$$;
+
+grant execute on function set_registration_status(text, boolean) to anon, authenticated;

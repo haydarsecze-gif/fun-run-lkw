@@ -113,6 +113,7 @@ function App() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
   const [slogan, setSlogan] = useState('');
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(true);
 
   // Admin Dashboard State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -169,6 +170,34 @@ function App() {
   useEffect(() => {
     const randomIndex = Math.floor(Math.random() * INSPIRING_SLOGANS.length);
     setSlogan(INSPIRING_SLOGANS[randomIndex]);
+  }, []);
+
+  // Fetch registration status on mount
+  useEffect(() => {
+    const fetchStatus = async () => {
+      if (isMockMode) {
+        const stored = localStorage.getItem('funrun_registration_open');
+        if (stored !== null) {
+          setIsRegistrationOpen(JSON.parse(stored));
+        }
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('config')
+          .select('value')
+          .eq('key', 'registration_status')
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data && data.value) {
+          setIsRegistrationOpen(data.value.open !== false);
+        }
+      } catch (err) {
+        console.error('Error fetching registration status config:', err);
+      }
+    };
+    fetchStatus();
   }, []);
 
   const navigateTo = (path) => {
@@ -286,6 +315,36 @@ function App() {
     link.click();
     document.body.removeChild(link);
     showToast('Exported registrations to CSV successfully!');
+  };
+
+  const handleToggleRegistration = async () => {
+    const newStatus = !isRegistrationOpen;
+    setAdminLoading(true);
+    
+    if (isMockMode) {
+      setIsRegistrationOpen(newStatus);
+      localStorage.setItem('funrun_registration_open', JSON.stringify(newStatus));
+      setAdminLoading(false);
+      showToast(`Registrations are now ${newStatus ? 'OPEN' : 'CLOSED'}!`);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.rpc('set_registration_status', {
+        admin_password: adminPassword,
+        is_open: newStatus
+      });
+
+      if (error) throw error;
+
+      setIsRegistrationOpen(newStatus);
+      showToast(`Registrations are now ${newStatus ? 'OPEN' : 'CLOSED'}!`);
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Failed to update registration status.', 'error');
+    } finally {
+      setAdminLoading(false);
+    }
   };
 
   const showToast = (message, type = 'success') => {
@@ -807,10 +866,11 @@ function App() {
                   </button>
                   <button 
                     onClick={openModal}
-                    className="btn-primary pulse-glow"
+                    className={`btn-primary ${isRegistrationOpen ? 'pulse-glow' : ''}`}
+                    disabled={!isRegistrationOpen}
                   >
                     <UserPlus className="w-4 h-4" />
-                    <span className="nav-btn-text">Register</span>
+                    <span className="nav-btn-text">{isRegistrationOpen ? 'Register' : 'Closed'}</span>
                   </button>
                 </>
               )}
@@ -884,6 +944,20 @@ function App() {
                   </div>
 
                   <div className="admin-controls-box">
+                    {/* Toggle accepting registrations setting */}
+                    <div className="admin-toggle-wrapper">
+                      <span className="admin-toggle-label">Accepting Signups:</span>
+                      <button 
+                        onClick={handleToggleRegistration}
+                        disabled={adminLoading}
+                        className={`admin-toggle-btn ${isRegistrationOpen ? 'open' : ''}`}
+                        title="Toggle to enable/disable public registrations"
+                      >
+                        <span className="toggle-dot"></span>
+                        <span className="toggle-text">{isRegistrationOpen ? 'ON' : 'OFF'}</span>
+                      </button>
+                    </div>
+
                     <div className="admin-search-wrapper search-wrapper">
                       <span className="search-icon-box">
                         <Search className="w-4 h-4" />
@@ -1023,11 +1097,12 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem', padding: '0 1.25rem', width: '100%' }}>
               <button 
                 onClick={openModal}
-                className="btn-primary pulse-glow"
+                className={`btn-primary ${isRegistrationOpen ? 'pulse-glow' : ''}`}
                 style={{ width: '100%', maxWidth: '620px', padding: '1rem 2.5rem', fontSize: '1.05rem', borderRadius: '16px', gap: '0.65rem' }}
+                disabled={!isRegistrationOpen}
               >
                 <UserPlus className="w-5 h-5" />
-                <span>Register</span>
+                <span>{isRegistrationOpen ? 'Register' : 'Registration Closed'}</span>
               </button>
             </div>
 
@@ -1117,260 +1192,279 @@ function App() {
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        <form onSubmit={handleRegister} className="modal-body-form">
-          {formError && (
-            <div className="form-warning" style={{ padding: '0.85rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '14px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-              <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <span>{formError}</span>
-            </div>
-          )}
-
-          {/* Full Name */}
-          <div className="form-group">
-            <label htmlFor="full-name" className="form-label">Full Name</label>
-            <input
-              type="text"
-              id="full-name"
-              placeholder="e.g. Johnathan Doe"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="glass-input"
-            />
-          </div>
-
-          {/* BIB Name */}
-          <div className="form-group">
-            <label htmlFor="bib-name" className="form-label">Name on the Bib (Nickname)</label>
-            <input
-              type="text"
-              id="bib-name"
-              maxLength="15"
-              placeholder="e.g. Johnny (Max 15 chars)"
-              value={bibName}
-              onChange={(e) => setBibName(e.target.value)}
-              className="glass-input"
-            />
-          </div>
-
-          {/* Phone */}
-          <div className="form-group">
-            <label htmlFor="phone-number" className="form-label">Phone Number</label>
-            <input
-              type="tel"
-              id="phone-number"
-              placeholder="e.g. +60123456789"
-              value={phoneNumber}
-              onBlur={checkPhoneDuplicate}
-              onChange={(e) => {
-                setPhoneNumber(e.target.value);
-                setPhoneWarning('');
-              }}
-              className="glass-input"
-            />
-            {phoneWarning && (
-              <p className="form-warning">
-                <AlertTriangle className="w-3.5 h-3.5" /> {phoneWarning}
-              </p>
+        {isRegistrationOpen ? (
+          <form onSubmit={handleRegister} className="modal-body-form">
+            {formError && (
+              <div className="form-warning" style={{ padding: '0.85rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '14px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <span>{formError}</span>
+              </div>
             )}
-          </div>
 
-          {/* Gender */}
-          <div className="form-group">
-            <span className="form-label">Gender</span>
-            <div className="custom-radio-group">
+            {/* Full Name */}
+            <div className="form-group">
+              <label htmlFor="full-name" className="form-label">Full Name</label>
               <input
-                type="radio"
-                id="gender-male"
-                name="gender"
-                value="Male"
-                checked={gender === 'Male'}
-                onChange={() => setGender('Male')}
-                className="hidden-radio"
+                type="text"
+                id="full-name"
+                placeholder="e.g. Johnathan Doe"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="glass-input"
               />
-              <label htmlFor="gender-male" className="custom-radio-card">
-                Male
-              </label>
+            </div>
 
+            {/* BIB Name */}
+            <div className="form-group">
+              <label htmlFor="bib-name" className="form-label">Name on the Bib (Nickname)</label>
               <input
-                type="radio"
-                id="gender-female"
-                name="gender"
-                value="Female"
-                checked={gender === 'Female'}
-                onChange={() => setGender('Female')}
-                className="hidden-radio"
+                type="text"
+                id="bib-name"
+                maxLength="15"
+                placeholder="e.g. Johnny (Max 15 chars)"
+                value={bibName}
+                onChange={(e) => setBibName(e.target.value)}
+                className="glass-input"
               />
-              <label htmlFor="gender-female" className="custom-radio-card">
-                Female
-              </label>
             </div>
-          </div>
 
-          {/* Class */}
-          <div className="form-group">
-            <label htmlFor="class-select" className="form-label">Class</label>
-            <select
-              id="class-select"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              className="glass-input"
-            >
-              {['S2A', 'S2B', 'S2C', 'S2D', 'S2E', 'S2F', 'S2G', 'S2H', 'S2I', 'S2J', 'S1A', 'Degree', 'Other'].map(cls => (
-                <option key={cls} value={cls} className="bg-slate-900 text-white">{cls}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Compete */}
-          <div className="form-group">
-            <span className="form-label">Would you like to compete for the prize?</span>
-            <div className="custom-radio-group">
+            {/* Phone Number */}
+            <div className="form-group">
+              <label htmlFor="phone-number" className="form-label">Phone Number</label>
               <input
-                type="radio"
-                id="compete-yes"
-                name="compete"
-                value="Yes"
-                checked={compete === 'Yes'}
-                onChange={() => setCompete('Yes')}
-                className="hidden-radio"
+                type="tel"
+                id="phone-number"
+                placeholder="e.g. +60123456789"
+                value={phoneNumber}
+                onBlur={checkPhoneDuplicate}
+                onChange={(e) => {
+                  setPhoneNumber(e.target.value);
+                  setPhoneWarning('');
+                }}
+                className="glass-input"
               />
-              <label htmlFor="compete-yes" className="custom-radio-card">
-                Yes
-              </label>
-
-              <input
-                type="radio"
-                id="compete-no"
-                name="compete"
-                value="No"
-                checked={compete === 'No'}
-                onChange={() => setCompete('No')}
-                className="hidden-radio"
-              />
-              <label htmlFor="compete-no" className="custom-radio-card">
-                No (Join for Fun)
-              </label>
-            </div>
-          </div>
-
-          {/* T-Shirt */}
-          <div className="form-group">
-            <span className="form-label">T-Shirt Size</span>
-            <div className="t-shirt-grid">
-              {['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'].map(size => (
-                <React.Fragment key={size}>
-                  <input
-                    type="radio"
-                    id={`size-${size}`}
-                    name="t-shirt-size"
-                    value={size}
-                    checked={tShirtSize === size}
-                    onChange={() => setTShirtSize(size)}
-                    className="hidden-radio"
-                  />
-                  <label htmlFor={`size-${size}`} className="custom-radio-card">
-                    {SIZE_LABELS[size]}
-                  </label>
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-
-          {/* BIB Number */}
-          <div className="form-group">
-            <label htmlFor="bib-number" className="form-label">Choose 4-Digit BIB Number</label>
-            <input
-              type="text"
-              id="bib-number"
-              inputmode="numeric"
-              placeholder="e.g. 0007"
-              value={bibNumber}
-              onChange={(e) => handleBibChange(e.target.value)}
-              className="glass-input tracking-widest font-heading"
-              style={{ fontWeight: 700, fontSize: '1.25rem', textAlign: 'center' }}
-            />
-            {bibWarning ? (
-              <p className="form-warning">
-                <AlertTriangle className="w-3.5 h-3.5" /> {bibWarning}
-              </p>
-            ) : bibNumber.length === 4 ? (
-              <p className="form-success">
-                <Check className="w-3.5 h-3.5" /> BIB Number {bibNumber} is available!
-              </p>
-            ) : null}
-            <p className="form-hint">Must be exactly 4 digits. (e.g. 0001, 0023, 9999).</p>
-          </div>
-
-          {/* Telegram Channel */}
-          <div className="telegram-pod">
-            <div className="telegram-info">
-              <p className="telegram-label">
-                <Send className="w-3.5 h-3.5" /> Telegram Updates
-              </p>
-              <p className="telegram-desc">Join the official Telegram Channel to stay updated on event news.</p>
-            </div>
-            <a 
-              href="https://t.me/+YR_yDNr5CaJjNTI1" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="btn-secondary"
-              style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}
-            >
-              Join Channel
-            </a>
-          </div>
-
-          {/* Waiver */}
-          <div className="form-group" style={{ paddingTop: '0.5rem' }}>
-            <span className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <ShieldCheck className="w-4 h-4 text-cyan-400" />
-              Health & Liability Waiver
-            </span>
-            <div className="waiver-text-box">
-              "I confirm that I am physically fit to participate in the run and accept full responsibility for my own safety during the event."
-            </div>
-            
-            <label className="checkbox-container" style={{ marginTop: '0.5rem' }}>
-              <input
-                type="checkbox"
-                checked={waiverAccepted}
-                onChange={(e) => setWaiverAccepted(e.target.checked)}
-              />
-              <div className="checkbox-box"></div>
-              <span style={{ fontSize: '0.9rem', color: '#cbd5e1', fontWeight: 500, userSelect: 'none' }}>
-                I agree and accept.
-              </span>
-            </label>
-          </div>
-
-          {/* Footer Submit */}
-          <div className="modal-footer">
-            <button 
-              type="button" 
-              onClick={closeModal}
-              className="btn-secondary"
-              disabled={submitting}
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              className="btn-primary"
-              disabled={submitting || !fullName.trim() || !bibName.trim() || !phoneNumber.trim() || bibNumber.length !== 4 || !waiverAccepted || !!bibWarning || !!phoneWarning}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Submit Registration'
+              {phoneWarning && (
+                <p className="form-warning">
+                  <AlertTriangle className="w-3.5 h-3.5" /> {phoneWarning}
+                </p>
               )}
+            </div>
+
+            {/* Gender */}
+            <div className="form-group">
+              <span className="form-label">Gender</span>
+              <div className="custom-radio-group">
+                <input
+                  type="radio"
+                  id="gender-male"
+                  name="gender"
+                  value="Male"
+                  checked={gender === 'Male'}
+                  onChange={() => setGender('Male')}
+                  className="hidden-radio"
+                />
+                <label htmlFor="gender-male" className="custom-radio-card">
+                  Male
+                </label>
+
+                <input
+                  type="radio"
+                  id="gender-female"
+                  name="gender"
+                  value="Female"
+                  checked={gender === 'Female'}
+                  onChange={() => setGender('Female')}
+                  className="hidden-radio"
+                />
+                <label htmlFor="gender-female" className="custom-radio-card">
+                  Female
+                </label>
+              </div>
+            </div>
+
+            {/* Class */}
+            <div className="form-group">
+              <label htmlFor="class-select" className="form-label">Class</label>
+              <select
+                id="class-select"
+                value={className}
+                onChange={(e) => setClassName(e.target.value)}
+                className="glass-input"
+              >
+                {['S2A', 'S2B', 'S2C', 'S2D', 'S2E', 'S2F', 'S2G', 'S2H', 'S2I', 'S2J', 'S1A', 'Degree', 'Other'].map(cls => (
+                  <option key={cls} value={cls} className="bg-slate-900 text-white">{cls}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Compete */}
+            <div className="form-group">
+              <span className="form-label">Would you like to compete for the prize?</span>
+              <div className="custom-radio-group">
+                <input
+                  type="radio"
+                  id="compete-yes"
+                  name="compete"
+                  value="Yes"
+                  checked={compete === 'Yes'}
+                  onChange={() => setCompete('Yes')}
+                  className="hidden-radio"
+                />
+                <label htmlFor="compete-yes" className="custom-radio-card">
+                  Yes
+                </label>
+
+                <input
+                  type="radio"
+                  id="compete-no"
+                  name="compete"
+                  value="No"
+                  checked={compete === 'No'}
+                  onChange={() => setCompete('No')}
+                  className="hidden-radio"
+                />
+                <label htmlFor="compete-no" className="custom-radio-card">
+                  No (Join for Fun)
+                </label>
+              </div>
+            </div>
+
+            {/* T-Shirt Size */}
+            <div className="form-group">
+              <span className="form-label">T-Shirt Size</span>
+              <div className="t-shirt-grid">
+                {Object.keys(SIZE_LABELS).map((size) => (
+                  <React.Fragment key={size}>
+                    <input
+                      type="radio"
+                      id={`size-${size}`}
+                      name="t-shirt-size"
+                      value={size}
+                      checked={tShirtSize === size}
+                      onChange={() => setTShirtSize(size)}
+                      className="hidden-radio"
+                    />
+                    <label htmlFor={`size-${size}`} className="custom-radio-card">
+                      {SIZE_LABELS[size]}
+                    </label>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+
+            {/* BIB Number */}
+            <div className="form-group">
+              <label htmlFor="bib-number" className="form-label">Choose 4-Digit BIB Number</label>
+              <input
+                type="text"
+                id="bib-number"
+                inputmode="numeric"
+                placeholder="e.g. 0007"
+                value={bibNumber}
+                onChange={(e) => handleBibChange(e.target.value)}
+                className="glass-input tracking-widest font-heading"
+                style={{ fontWeight: 700, fontSize: '1.25rem', textAlign: 'center' }}
+              />
+              {bibWarning ? (
+                <p className="form-warning">
+                  <AlertTriangle className="w-3.5 h-3.5" /> {bibWarning}
+                </p>
+              ) : bibNumber.length === 4 ? (
+                <p className="form-success">
+                  <Check className="w-3.5 h-3.5" /> BIB Number {bibNumber} is available!
+                </p>
+              ) : null}
+              <p className="form-hint">Must be exactly 4 digits. (e.g. 0001, 0023, 9999).</p>
+            </div>
+
+            {/* Telegram Channel */}
+            <div className="telegram-pod">
+              <div className="telegram-info">
+                <p className="telegram-label">
+                  <Send className="w-3.5 h-3.5" /> Telegram Updates
+                </p>
+                <p className="telegram-desc">Join the official Telegram Channel to stay updated on event news.</p>
+              </div>
+              <a 
+                href="https://t.me/+YR_yDNr5CaJjNTI1" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="btn-secondary"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}
+              >
+                Join Channel
+              </a>
+            </div>
+
+            {/* Waiver */}
+            <div className="form-group" style={{ paddingTop: '0.5rem' }}>
+              <span className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                Health & Liability Waiver
+              </span>
+              <div className="waiver-text-box">
+                "I confirm that I am physically fit to participate in the run and accept full responsibility for my own safety during the event."
+              </div>
+              
+              <label className="checkbox-container" style={{ marginTop: '0.5rem' }}>
+                <input
+                  type="checkbox"
+                  checked={waiverAccepted}
+                  onChange={(e) => setWaiverAccepted(e.target.checked)}
+                />
+                <div className="checkbox-box"></div>
+                <span style={{ fontSize: '0.9rem', color: '#cbd5e1', fontWeight: 500, userSelect: 'none' }}>
+                  I agree and accept.
+                </span>
+              </label>
+            </div>
+
+            {/* Footer Submit */}
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                onClick={closeModal}
+                className="btn-secondary"
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="btn-primary"
+                disabled={submitting || !fullName.trim() || !bibName.trim() || !phoneNumber.trim() || bibNumber.length !== 4 || !waiverAccepted || !!bibWarning || !!phoneWarning}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Submit Registration'
+                )}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div style={{ padding: '3.5rem 2rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1.25rem', borderRadius: '50%', color: '#ef4444', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(239, 68, 68, 0.15)' }}>
+              <Lock className="w-10 h-10" />
+            </div>
+            <div>
+              <h4 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#ffffff', marginBottom: '0.65rem' }}>Registrations Closed</h4>
+              <p style={{ fontSize: '0.9rem', color: '#cbd5e1', maxWidth: '380px', lineHeight: 1.6 }}>
+                The administrator has temporarily paused signups for this event. Please stay tuned or check back later!
+              </p>
+            </div>
+            <button 
+              onClick={closeModal} 
+              className="btn-primary" 
+              style={{ padding: '0.95rem 2.5rem', borderRadius: '16px', fontSize: '0.95rem', marginTop: '0.5rem', width: 'auto', maxWidth: '180px', display: 'inline-flex', justifyContent: 'center' }}
+            >
+              Close
             </button>
           </div>
-
-        </form>
+        )}
       </dialog>
 
       {/* Admin Edit Modal Dialog */}

@@ -1115,6 +1115,91 @@ dialog.registration-modal::backdrop {
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
+/* iOS Pill-Style Toggle Settings Switch */
+.admin-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.5rem 1rem;
+  border-radius: 16px;
+  height: 48px;
+}
+
+.admin-toggle-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-body);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-toggle-btn {
+  position: relative;
+  width: 60px;
+  height: 28px;
+  border-radius: 20px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.admin-toggle-btn.open {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.toggle-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ef4444;
+  position: absolute;
+  left: 4px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.admin-toggle-btn.open .toggle-dot {
+  left: 34px;
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.toggle-text {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #ffffff;
+  position: absolute;
+  right: 8px;
+  transition: all 0.3s ease;
+}
+
+.admin-toggle-btn.open .toggle-text {
+  right: auto;
+  left: 8px;
+}
+
+/* Disabled button states */
+.btn-primary:disabled {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.btn-primary:disabled::after {
+  display: none !important;
+}
+
 /* ==========================================================================
    11. TYPOGRAPHY & UTILITIES
    ========================================================================== */
